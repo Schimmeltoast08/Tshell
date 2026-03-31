@@ -9,13 +9,17 @@ import java.net.InetAddress;
 public class tshell {
     static String currentDirectory = System.getProperty("user.dir");
     public static void main(String[] args) throws Exception {
+        Boolean doExit = false;
+        while (!doExit){
         Scanner scanner = new Scanner(System.in);
         boolean doTry = true;
         boolean doPrintSlogan = true;
         String shellStarterString = "";
         String asciiArtStringFromConfig = """
         """;
-                String shellStarterAdditionalString = "";
+        String preferedConfigEditor = "vim";
+        String shellStarterAdditionalString = "";
+        boolean doReloadAfterConfigEdit = false;
 
 
         ArrayList<String> configFile = new ArrayList<>();
@@ -32,6 +36,13 @@ public class tshell {
             shellStarterAdditionalString = configFile.get(1).trim();
         try{
          shellStarterString = configFile.get(0);
+         preferedConfigEditor = configFile.get(18);
+         try {
+            if (configFile.get(19).equalsIgnoreCase("doReloadAfterConfigEdit")){
+                doReloadAfterConfigEdit = true;
+            }
+             
+         } catch (Exception e) {}
          try {
             String newLine = System.getProperty("line.separator");
             for (int i = 2; i < 17; i++ ){
@@ -77,6 +88,7 @@ public class tshell {
             }
             String prompt = scanner.nextLine();
             if (prompt.equals("exit")){
+                doExit = true;
                 break;
             }
             
@@ -104,7 +116,32 @@ public class tshell {
                 isValid = true;
                 doTry = false;
                 doPrintSlogan = false;
-                IO.println("Tshell version 1.0.0");
+                IO.println("Tshell version 2.2.0");
+            }
+
+            if (prompt.startsWith("tshell --reload")){
+                printColour("reoloading shell", "Green");
+                break;
+            }
+
+            if (prompt.startsWith("tshell -c")){
+                isValid = true;
+                doTry = false;
+                doPrintSlogan = false;
+                if (prompt.startsWith("tshell -cfg")){
+                    try {
+                        executeCommand(preferedConfigEditor + " " +  System.getProperty("user.home") + "/.config/tshell/config.tscfg");
+                        if (doReloadAfterConfigEdit){
+                            printColour("Auto reloading shell after config edit", "Green");
+                            break;
+                        }
+                    } catch (Exception e) {
+                        IO.println("Could not open config file. Run tshell -c to locate it and try manually");
+                    }
+
+                } else {
+                    IO.println("the config is in " + System.getProperty("user.home") + "/.config/tshell/config.tscfg");
+                }
             }
 
 
@@ -153,6 +190,7 @@ public class tshell {
             
 
         }
+    }
     }
 
     static void isShellBuiltin(String input){
