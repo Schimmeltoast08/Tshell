@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.net.InetAddress;
+import java.util.List;
 
 
 public class tshell {
@@ -193,7 +194,10 @@ public class tshell {
 
            if (doTry){
            if (!prompt.isEmpty() && (executeCommand(prompt)) == false && isValid == false){
-            IO.println(prompt + ": command not found");
+            try{
+                suggest(prompt);
+            } catch (Exception e){}
+            //IO.println(prompt + ": command not found");
            }
            }
            doTry = true;
@@ -431,7 +435,41 @@ static void printAscii(String asciiConfig){
 
     }
 
+                    //Bad code, //TODO: make better
+///////////////////////////////////////////
+static void suggest(String input) {
+    for (String cmd : getAllCommands()) {
+        if (cmd.startsWith(input)) {
+            System.out.println("  " + cmd);
+        }
+    }
+}
 
+static List<String> getAllCommands() {
+    List<String> cmds = new ArrayList<>();
+
+    // builtins
+    cmds.addAll(List.of("cd", "pwd", "exit", "echo", "clear", "help", "tshell"));
+
+    // PATH executables
+    String path = System.getenv("PATH");
+    String[] paths = path.split(File.pathSeparator);
+
+    for (String p : paths) {
+        File dir = new File(p);
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                if (f.canExecute()) {
+                    cmds.add(f.getName());
+                }
+            }
+        }
+    }
+
+    return cmds;
+}
+//////////////////////////////
 
 }
 
