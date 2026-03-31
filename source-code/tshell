@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+java /usr/bin/tshell.java
