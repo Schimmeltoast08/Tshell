@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.net.InetAddress;
 
+
 public class tshell {
     static String currentDirectory = System.getProperty("user.dir");
     public static void main(String[] args) throws Exception {
@@ -20,6 +21,8 @@ public class tshell {
         String preferedConfigEditor = "vim";
         String shellStarterAdditionalString = "";
         boolean doReloadAfterConfigEdit = false;
+        String promptFGColour = "White";
+        String promptBGColour = "";
 
 
         ArrayList<String> configFile = new ArrayList<>();
@@ -36,16 +39,18 @@ public class tshell {
             shellStarterAdditionalString = configFile.get(1).trim();
         try{
          shellStarterString = configFile.get(0);
-         preferedConfigEditor = configFile.get(18);
+         preferedConfigEditor = configFile.get(20);
+         promptFGColour = configFile.get(2);
+         promptBGColour = configFile.get(3);
          try {
-            if (configFile.get(19).equalsIgnoreCase("doReloadAfterConfigEdit")){
+            if (configFile.get(21).equalsIgnoreCase("doReloadAfterConfigEdit")){
                 doReloadAfterConfigEdit = true;
             }
              
          } catch (Exception e) {}
          try {
             String newLine = System.getProperty("line.separator");
-            for (int i = 2; i < 17; i++ ){
+            for (int i = 4; i < 18; i++ ){
                 
                 
                     asciiArtStringFromConfig += configFile.get(i);
@@ -54,7 +59,7 @@ public class tshell {
             }
              
          } catch (Exception e) { 
-            if(!(configFile.get(18).equalsIgnoreCase("ignoreEmptyAsciiArtWarning"))){
+            if(!(configFile.get(19).equalsIgnoreCase("ignoreEmptyAsciiArtWarning"))){
                 IO.println("No ascii art in config, using default" + e);
             }
          }
@@ -80,14 +85,14 @@ public class tshell {
             if (!(shellStarterString.isEmpty())){
                 if (shellStarterString.startsWith("user@host")){
                     if (shellStarterAdditionalString.equals("doSlashSeperate")){
-                        IO.print(System.getProperty("user.name") + "/" + InetAddress.getLocalHost().getHostName() + "> ");
+                        printColour((System.getProperty("user.name") + "/" + InetAddress.getLocalHost().getHostName() + "> "),promptFGColour, promptBGColour);
                     } else {
-                            IO.print(System.getProperty("user.name") + "@" + InetAddress.getLocalHost().getHostName() + shellStarterAdditionalString +" ");
+                            printColour((System.getProperty("user.name") + "@" + InetAddress.getLocalHost().getHostName() + shellStarterAdditionalString +" "),promptFGColour,promptBGColour);
                         }
                     } else if (shellStarterAdditionalString.equals("showCWD")){
-                        IO.print(getCurrentWorkingDirectory() + "> ");
+                        printColour((currentDirectory + ">" + "\u001B[0m "), promptFGColour, promptBGColour);
                     } else {
-                    IO.print(shellStarterString + shellStarterAdditionalString + " ");
+                    printColour((shellStarterString + shellStarterAdditionalString), promptFGColour, promptBGColour);
                   }     
             } else{
             System.out.print("<\\>" + shellStarterAdditionalString + " "); // <\\> 
@@ -122,7 +127,7 @@ public class tshell {
                 isValid = true;
                 doTry = false;
                 doPrintSlogan = false;
-                IO.println("Tshell version 2.2.0");
+                IO.println("Tshell version 2.3.0");
             }
 
             if (prompt.startsWith("tshell --reload")){
@@ -397,11 +402,11 @@ static void printAscii(String asciiConfig){
             case "Purple" -> AnsiColNumBG = "\u001B[45m";
             case "Cyan" -> AnsiColNumBG = "\u001B[46m";
             case "White" -> AnsiColNumBG = "\u001B[47m";
-            default -> AnsiColNumBG = "\u001B[40m";
+            default -> AnsiColNumBG = "";//"\u001B[40m";
             
         }
 
-        IO.println(AnsiColNumFG + AnsiColNumBG + str + ANSIRESET);
+        IO.print(AnsiColNumFG + AnsiColNumBG + str + ANSIRESET);
 
     }
 

@@ -45,10 +45,12 @@ inside of tshell:
 |------|---------|---------|--------|
 |   1  | Shell prompt | Any symbol(s) | Set the prompt |
 |   2  | Prompt addition | Any symbol(s) | add to the prompt |
-| 3-17 | Ascii logo | Any Ascii logo that fits into 3-17 lines exactly |  Change the output of tshell -l |
-|  18  | Disable Warning | ignoreEmptyAsciiArtWarning | Ignore the warning if the ascii art does not fit |
-|  19  | Text editor | Any text editor | Sets the text editor used by tshell -cfg |
-|  20  | Reload behaviour | doReloadAfterConfigEdit | Setting for if the shell should restart after editing the config |
+|   3  | Foreground Colour | Most colours | set the prompt foreground colour |
+|   4  | Background Colour | Most colours | Set the prompt background colour |
+| 5-19 | Ascii logo | Any Ascii logo that fits into 3-17 lines exactly |  Change the output of tshell -l |
+|  20  | Disable Warning | ignoreEmptyAsciiArtWarning | Ignore the warning if the ascii art does not fit |
+|  21  | Text editor | Any text editor | Sets the text editor used by tshell -cfg |
+|  22  | Reload behaviour | doReloadAfterConfigEdit | Setting for if the shell should restart after editing the config |
 
 ### Secret functions
 1. if you set the second line to "user@host", the prompt will be your username @ your hostname 
