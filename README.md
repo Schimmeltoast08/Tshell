@@ -47,7 +47,7 @@ inside of tshell:
 |   2  | Prompt addition | Any symbol(s) | add to the prompt |
 |   3  | Foreground Colour | Most colours | set the prompt foreground colour |
 |   4  | Background Colour | Most colours | Set the prompt background colour |
-| 5-19 | Ascii logo | Any Ascii logo that fits into 3-17 lines exactly |  Change the output of tshell -l |
+| 5-19 | Ascii logo | Any Ascii logo that fits into 14 lines exactly |  Change the output of tshell -l |
 |  20  | Disable Warning | ignoreEmptyAsciiArtWarning | Ignore the warning if the ascii art does not fit |
 |  21  | Text editor | Any text editor | Sets the text editor used by tshell -cfg |
 |  22  | Reload behaviour | doReloadAfterConfigEdit | Setting for if the shell should restart after editing the config |
