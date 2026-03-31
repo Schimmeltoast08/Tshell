@@ -79,8 +79,14 @@ public class tshell {
             boolean isValid = false;
             if (!(shellStarterString.isEmpty())){
                 if (shellStarterString.startsWith("user@host")){
-                    IO.print(System.getProperty("user.name") + "@" + InetAddress.getLocalHost().getHostName() + shellStarterAdditionalString +" ");
-                } else {
+                    if (shellStarterAdditionalString.equals("doSlashSeperate")){
+                        IO.print(System.getProperty("user.name") + "/" + InetAddress.getLocalHost().getHostName() + "> ");
+                    } else {
+                            IO.print(System.getProperty("user.name") + "@" + InetAddress.getLocalHost().getHostName() + shellStarterAdditionalString +" ");
+                        }
+                    } else if (shellStarterAdditionalString.equals("showCWD")){
+                        IO.print(getCurrentWorkingDirectory() + "> ");
+                    } else {
                     IO.print(shellStarterString + shellStarterAdditionalString + " ");
                   }     
             } else{

@@ -43,9 +43,14 @@ inside of tshell:
 
 | Line | Setting | Options | Effect |
 |------|---------|---------|--------|
-|   1  | Shell prompt | Any symbol(s) or user@hostname | Set the prompt |
+|   1  | Shell prompt | Any symbol(s) | Set the prompt |
 |   2  | Prompt addition | Any symbol(s) | add to the prompt |
 | 3-17 | Ascii logo | Any Ascii logo that fits into 3-17 lines exactly |  Change the output of tshell -l |
 |  18  | Disable Warning | ignoreEmptyAsciiArtWarning | Ignore the warning if the ascii art does not fit |
 |  19  | Text editor | Any text editor | Sets the text editor used by tshell -cfg |
 |  20  | Reload behaviour | doReloadAfterConfigEdit | Setting for if the shell should restart after editing the config |
+
+### Secret functions
+1. if you set the second line to "user@host", the prompt will be your username @ your hostname 
+2. if you set the second line to "showCWD" (show current working directory) and the first line to anything other then user@host, the prompt will be your working directory
+3. if you set the second line to doSlashSeperate and the first line to user@host, your prompt will be username/hostname>
