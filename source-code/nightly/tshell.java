@@ -24,6 +24,8 @@ public class tshell {
         boolean doReloadAfterConfigEdit = false;
         String promptFGColour = "White";
         String promptBGColour = "";
+        String guiDarkMode = "";
+        MyFrame myframe = null; // for instanciation issue
 
 
         ArrayList<String> configFile = new ArrayList<>();
@@ -49,6 +51,7 @@ public class tshell {
             }
              
          } catch (Exception e) {}
+         try { guiDarkMode = configFile.get(22);} catch (Exception e){}
          try {
             String newLine = System.getProperty("line.separator");
             for (int i = 4; i < 18; i++ ){
@@ -96,11 +99,12 @@ public class tshell {
                     printColour((shellStarterString + shellStarterAdditionalString), promptFGColour, promptBGColour);
                   }     
             } else{
-            System.out.print("<\\>" + shellStarterAdditionalString + " "); // <\\> 
+            System.out.print("<\\>" + shellStarterAdditionalString + " "); 
             }
             String prompt = scanner.nextLine();
             if (prompt.equals("exit")){
                 doExit = true;
+                try{myframe.dispose();} catch (NullPointerException e){/* no panel to kill*/}
                 break;
             }
             
@@ -129,6 +133,17 @@ public class tshell {
                 doTry = false;
                 doPrintSlogan = false;
                 IO.println("Tshell version 2.3.0");
+            }
+
+            if (prompt.startsWith("tshell --gui")){
+                isValid = true;
+                doTry = false;
+                doPrintSlogan = false;
+                Boolean doDarkMode = true;
+                if (!(guiDarkMode.equals("guiDarkMode"))){
+                    doDarkMode = false;
+                }
+                myframe = new MyFrame(doDarkMode, shellStarterString);
             }
 
             if (prompt.startsWith("tshell --reload")){
@@ -192,6 +207,8 @@ public class tshell {
             }
 
 
+
+
            if (doTry){
            if (!prompt.isEmpty() && (executeCommand(prompt)) == false && isValid == false){
             try{
@@ -205,6 +222,7 @@ public class tshell {
             
 
         }
+        
     }
     }
 
@@ -466,8 +484,14 @@ static List<String> getAllCommands() {
             }
         }
     }
+    ArrayList<String> sanetizedCmds = new ArrayList<>();
+    for (String cmd : cmds){
+        if (!(sanetizedCmds.contains(cmd))){
+            sanetizedCmds.add(cmd);
+        }
+    }
 
-    return cmds;
+    return sanetizedCmds;
 }
 //////////////////////////////
 
