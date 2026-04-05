@@ -3,12 +3,16 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.Color;
-import java.awt.Dimension;
-//import java.awt.FlowLayout;
 
+import java.util.ArrayList;
+
+import java.io.FileWriter;
+import java.io.IOException;
 
 
 /**
@@ -17,17 +21,23 @@ import java.awt.Dimension;
  */
 public class MyFrame extends JFrame implements ActionListener{
 
-    JButton  PromptSettingTextFieldSubmitButton;
+    JButton PromptSettingTextFieldSubmitButton;
+    JButton PromptAdditionTextFieldSubmitButton;
+    JButton SettingsSubmitButton;
+
     JTextField PromptSettingTextField;
-    String promptSetting;
+    JTextField PromptAdditionTextField;
 
 
+    ArrayList<String> bufferConfigFile;
 
 
-    MyFrame(Boolean doDarkMode, String cfgFilePrompt){
+    MyFrame(Boolean doDarkMode, ArrayList<String> configFile){
         Color fontColor;
         Color OddPanelColor;
         Color EvenPanelColor;
+        this.bufferConfigFile = configFile;
+
 
     if (doDarkMode){
         this.getContentPane().setBackground(new Color(20,20,20));
@@ -42,33 +52,72 @@ public class MyFrame extends JFrame implements ActionListener{
 
     }
 
+
+
+/// promptsetting \\\
+
     JPanel PromptSettingPanel = new JPanel();
     PromptSettingPanel.setBackground(OddPanelColor);
-    PromptSettingPanel.setBounds(0,0,200,50);
+    PromptSettingPanel.setBounds(0,0,1000,50);
     PromptSettingPanel.setLayout(null);
-    
-
-    JPanel PromptAdditionPanel = new JPanel();
-    PromptAdditionPanel.setBackground(EvenPanelColor);
-    PromptAdditionPanel.setLayout(null);
-
 
     JLabel PromptSetting = new JLabel("Prompt: ");
     PromptSetting.setForeground(fontColor);
     PromptSetting.setBounds(0,0,200,50);
 
-    JLabel PromptAddition = new JLabel("Prompt addition:");
-    PromptAddition.setForeground(fontColor);
-    PromptAddition.setBounds(0,50,200,50); // x y height width
-
-    PromptSettingTextField = new JTextField(cfgFilePrompt);
+    PromptSettingTextField = new JTextField(configFile.get(0));
     PromptSettingTextField.setBounds(700,0,200,50);
     PromptSettingTextField.setCaretColor(Color.black);
 
     PromptSettingTextFieldSubmitButton = new JButton("Submit");
     PromptSettingTextFieldSubmitButton.setBounds(900,0,100,50);
     PromptSettingTextFieldSubmitButton.addActionListener(this);
+
+/// promotsetting \\\
+
+
+
+
+/// promptaddition \\\
+    JLabel PromptAddition = new JLabel("Prompt addition:");
+    PromptAddition.setForeground(fontColor);
+    PromptAddition.setBounds(0,50,200,50); // x y height width
+
+
+    JPanel PromptAdditionPanel = new JPanel();
+    PromptAdditionPanel.setBackground(EvenPanelColor);
+    PromptAdditionPanel.setLayout(null);
+    PromptAdditionPanel.setBounds(0,50,1000,50);
+
     
+
+    PromptAdditionTextField = new JTextField(configFile.get(1));
+    PromptAdditionTextField.setBounds(700,50,200,50);
+    PromptAdditionTextField.setCaretColor(Color.black);
+
+    PromptAdditionTextFieldSubmitButton = new JButton("Submit");
+    PromptAdditionTextFieldSubmitButton.setBounds(900,50,100,50);
+    PromptAdditionTextFieldSubmitButton.addActionListener(this);
+
+/// promptaddition \\\
+
+
+
+
+/// submit settings \\\
+    JPanel SettingsSubmitButtonPanel = new JPanel();
+    SettingsSubmitButtonPanel.setBackground(OddPanelColor);
+    SettingsSubmitButtonPanel.setLayout(null);
+    SettingsSubmitButtonPanel.setBounds(0,905,200,50);
+
+
+    SettingsSubmitButton = new JButton("Save changes");
+    SettingsSubmitButton.setBackground(OddPanelColor);
+    SettingsSubmitButton.setBounds(0,905,200,50);
+    SettingsSubmitButton.addActionListener(this);
+/// submit settings \\\
+
+
 
 //          frame block ///////////////////////////////////////
     this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -82,13 +131,18 @@ public class MyFrame extends JFrame implements ActionListener{
 
 
 
-//          Add stack
+//          Add stack          \\
     this.add(PromptSetting);
     this.add(PromptAddition);
+    this.add(PromptSettingTextField);
+    this.add(PromptAdditionTextField);
+    this.add(PromptSettingTextFieldSubmitButton);
+    this.add(PromptAdditionTextFieldSubmitButton);
     this.add(PromptSettingPanel);
     this.add(PromptAdditionPanel);
-    this.add(PromptSettingTextField);
-    this.add(PromptSettingTextFieldSubmitButton);
+    this.add(SettingsSubmitButton);
+    this.add(SettingsSubmitButtonPanel);
+
 
 
 
@@ -98,16 +152,27 @@ public class MyFrame extends JFrame implements ActionListener{
     @Override
     public void actionPerformed(ActionEvent e){
         if (e.getSource() == PromptSettingTextFieldSubmitButton){
-            this.promptSetting = PromptSettingTextField.getText();
-            IO.println(this.promptSetting);
+            bufferConfigFile.set(0,PromptSettingTextField.getText());
+        }
 
-            //TODO https://stackoverflow.com/questions/20039980/java-replace-line-in-text-file
-            // logic: this puts it all down in a temporary config, moves the old config to a backup and renames
-            // or copies over the temp config to the config.tshcfg file, aka replaces it. 
-            // ArrayList contains FileLines, replace a line in file, save as tmpcfg, replace cfg with tmpcfg
-            // when "save changes" button is pressed. Else don't
-            // also add an exit button that closes the window but not the shell. 
-            // Plan: Monday evening
+        if (e.getSource() == PromptAdditionTextFieldSubmitButton){
+            bufferConfigFile.set(1, PromptAdditionTextField.getText());
+        }
+
+        if (e.getSource() == SettingsSubmitButton){
+            IO.println("Test");
+            try(FileWriter writer = new FileWriter(System.getProperty("user.home") + "/.config/tshell/config.tscfg")){
+                String cfg = "";
+                for(String str : bufferConfigFile){
+                    cfg += str + "\n";
+                }
+                IO.println("\n\n\n\n\n" + cfg);
+                writer.write(cfg);
+                writer.close();
+                
+            } catch (Exception f){
+                JOptionPane.showMessageDialog(null, "Error encountered while saving changes. Aborting");
+            }
         }
         
     }

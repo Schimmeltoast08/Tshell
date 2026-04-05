@@ -96,7 +96,7 @@ public class tshell {
                     } else if (shellStarterAdditionalString.equals("showCWD")){
                         printColour((currentDirectory + ">" + "\u001B[0m "), promptFGColour, promptBGColour);
                     } else {
-                    printColour((shellStarterString + shellStarterAdditionalString), promptFGColour, promptBGColour);
+                    printColour((shellStarterString + shellStarterAdditionalString + " "), promptFGColour, promptBGColour);
                   }     
             } else{
             System.out.print("<\\>" + shellStarterAdditionalString + " "); 
@@ -143,7 +143,7 @@ public class tshell {
                 if (!(guiDarkMode.equals("guiDarkMode"))){
                     doDarkMode = false;
                 }
-                myframe = new MyFrame(doDarkMode, shellStarterString);
+                myframe = new MyFrame(doDarkMode, configFile);
             }
 
             if (prompt.startsWith("tshell --reload")){
