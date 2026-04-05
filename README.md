@@ -15,13 +15,13 @@ sudo ./install.sh
 The binary version **only works on linux**. It is faster and easier then the source code, but you can not modify it youself
 Important note: The binary only supports the major updates (for example 2.0.0), not the minor updates and bugfixes (for example 2.2.0 or 2.2.1)
 
-## Source code 
+## Portable Source code 
 ```
 git clone https://github.com/Schimmeltoast08/Tshell.git
 cd Tshell/source-code
-./install.sh
+java tshell.java
 ```
-More up-to-date, but slower execution time. 
+More up-to-date, but slower execution time. This version is portable, meaning everything needed to run it stay in the folder it is in.  
 
 
 ## Usage
