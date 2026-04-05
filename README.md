@@ -19,14 +19,18 @@ Important note: The binary only supports the major updates (for example 2.0.0), 
 ```
 git clone https://github.com/Schimmeltoast08/Tshell.git
 cd Tshell/source-code
+mkdir ~/.config/tshell
+cp config.tscfg ~/.config/tshell/
 java tshell.java
 ```
-More up-to-date, but slower execution time. This version is portable, meaning everything needed to run it stay in the folder it is in.  
-
+More up-to-date, but slower execution time. This version is portable, meaning everything needed to run it stay in the folder it is in EXCEPT FOR THE CONFIGURATION.  
 
 ## Usage
 ```
-tshell               | start tshell
+Binary: tshell               | start tshell
+Portable: java tshell.java   | starts tshell
+
+
 inside of tshell:
     tshell           | display a friendly message
     tshell -l        | show the logo
