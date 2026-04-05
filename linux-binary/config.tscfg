@@ -20,3 +20,4 @@ White
 ignoreEmptyAsciiArtWarning⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 nvim
 doReloadAfterConfigEdit
+-guiDarkMode

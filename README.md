@@ -7,9 +7,9 @@ A customizeable shell written in Java.
 ```
 git clone https://github.com/Schimmeltoast08/Tshell.git
 cd Tshell/linux-binary
-mv tshell /usr/bin/tshell
 mkdir ~/.config/tshell
 cp config.tscfg ~/.config/tshell
+./install.sh
 
 ```
 The binary version **only works on linux**. It is faster and easier then the source code, but you can not modify it youself
@@ -21,7 +21,7 @@ git clone https://github.com/Schimmeltoast08/Tshell.git
 cd Tshell/source-code
 ./install.sh
 ```
-More up-to-date, but slower execution time. If you want to turn it into an executeable yourself, check out my tool called "jbuild" and run jbuild tshell in a directory which only contains the tshell.java file. Do not forget to copy the default config file or make your own! 
+More up-to-date, but slower execution time. 
 
 
 ## Usage
@@ -32,14 +32,15 @@ inside of tshell:
     tshell -l        | show the logo
     tshell -v        | show the version
     tshell -c        | show the config directory
-    tshell -cfg      | edit the config
+    tshell -cfg      | edit the config in cli
+    tshell --gui     | edit the config in a graphical environment
     tshell --reload  | reloads the shell
     help             | shows helpfull information
     type             | get the type of any command
 
 ```
 
-## Configuration
+## Configuration for cli
 
 | Line | Setting | Options | Effect |
 |------|---------|---------|--------|
