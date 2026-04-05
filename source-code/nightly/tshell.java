@@ -111,6 +111,7 @@ public class tshell {
             if (prompt.startsWith("echo")){
                 IO.println(prompt.substring(5));
                 isValid = true;
+                doTry = false;
             } // echo is a binary file for me
 
 
