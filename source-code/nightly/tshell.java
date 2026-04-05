@@ -145,6 +145,16 @@ public class tshell {
                     doDarkMode = false;
                 }
                 myframe = new MyFrame(doDarkMode, configFile);
+                while (true){
+                    if(myframe.doExit){
+                        myframe.dispose();
+                        break;
+                    }
+                }
+                if (doReloadAfterConfigEdit){
+                    printColour("reloading shell", "Green");
+                    break;
+                }
             }
 
             if (prompt.startsWith("tshell --reload")){
