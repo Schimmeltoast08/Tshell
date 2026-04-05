@@ -23,7 +23,7 @@ mkdir ~/.config/tshell
 cp config.tscfg ~/.config/tshell/
 java tshell.java
 ```
-More up-to-date, but slower execution time. This version is portable, meaning everything needed to run it stay in the folder it is in EXCEPT FOR THE CONFIGURATION.  
+More up-to-date, but slower execution time. This version is portable, meaning everything needed to run it stay in the folder it is in **except for the configuration**.  
 
 ## Usage
 ```
