@@ -24,7 +24,8 @@ cp config.tscfg ~/.config/tshell/
 java tshell.java
 ```
 More up-to-date, but slower execution time. This version is portable, meaning everything needed to run it stay in the folder it is in **except for the configuration**.  
-
+#### Nightly
+in the source code, there is a nightly folder. In this folder is the unstable testing code. Its update frequency may be down to minutes, it is the very most up-to-date as one can be. Perfect for bleeding-edge enthusiasts, yet it is largely very little tested.
 ## Usage
 ```
 Binary: tshell               | start tshell
