@@ -24,9 +24,13 @@ public class MyFrame extends JFrame implements ActionListener{
     JButton PromptSettingTextFieldSubmitButton;
     JButton PromptAdditionTextFieldSubmitButton;
     JButton SettingsSubmitButton;
+    JButton ForegroundColorTextFieldSubmitButton;
+    JButton BackgroundColorTextFieldSubmitButton;
 
     JTextField PromptSettingTextField;
     JTextField PromptAdditionTextField;
+    JTextField ForegroundColorTextField;
+    JTextField BackgroundColorTextField;
 
 
     ArrayList<String> bufferConfigFile;
@@ -101,6 +105,55 @@ public class MyFrame extends JFrame implements ActionListener{
 
 /// promptaddition \\\
 
+/// FG COL \\\
+
+    JPanel ForegroundColorPanel = new JPanel();
+    ForegroundColorPanel.setBackground(OddPanelColor);
+    ForegroundColorPanel.setBounds(0,100,1000,50);
+    ForegroundColorPanel.setLayout(null);
+
+    JLabel ForegroundColor = new JLabel("Foreground Color: ");
+    ForegroundColor.setForeground(fontColor);
+    ForegroundColor.setBounds(0,100,200,50);
+
+    ForegroundColorTextField = new JTextField(configFile.get(2));
+    ForegroundColorTextField.setBounds(700,100,200,50);
+    ForegroundColorTextField.setCaretColor(Color.black);
+
+    ForegroundColorTextFieldSubmitButton = new JButton("Submit");
+    ForegroundColorTextFieldSubmitButton.setBounds(900,100,100,50);
+    ForegroundColorTextFieldSubmitButton.addActionListener(this);
+
+/// FG COL \\\
+
+
+
+
+/// BG COL \\\
+
+    JPanel BackgroundColorPanel = new JPanel();
+    BackgroundColorPanel.setBackground(EvenPanelColor);
+    BackgroundColorPanel.setBounds(0,150,1000,50);
+    BackgroundColorPanel.setLayout(null);
+
+    JLabel BackgroundColor = new JLabel("Background Color: ");
+    BackgroundColor.setForeground(fontColor);
+    BackgroundColor.setBounds(0,150,200,50);
+
+    BackgroundColorTextField = new JTextField(configFile.get(3));
+    BackgroundColorTextField.setBounds(700,150,200,50);
+    BackgroundColorTextField.setCaretColor(Color.black);
+
+    BackgroundColorTextFieldSubmitButton = new JButton("Submit");
+    BackgroundColorTextFieldSubmitButton.setBounds(900,150,100,50);
+    BackgroundColorTextFieldSubmitButton.addActionListener(this);
+
+/// BG COL \\\
+
+
+
+
+
 
 
 
@@ -119,6 +172,18 @@ public class MyFrame extends JFrame implements ActionListener{
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 //          frame block ///////////////////////////////////////
     this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     this.setTitle("Tshell config");
@@ -134,12 +199,27 @@ public class MyFrame extends JFrame implements ActionListener{
 //          Add stack          \\
     this.add(PromptSetting);
     this.add(PromptAddition);
+    this.add(ForegroundColor);
+    this.add(BackgroundColor);
+
     this.add(PromptSettingTextField);
     this.add(PromptAdditionTextField);
+    this.add(ForegroundColorTextField);
+    this.add(BackgroundColorTextField);
+
     this.add(PromptSettingTextFieldSubmitButton);
     this.add(PromptAdditionTextFieldSubmitButton);
+    this.add(ForegroundColorTextFieldSubmitButton);
+    this.add(BackgroundColorTextFieldSubmitButton);
+
     this.add(PromptSettingPanel);
     this.add(PromptAdditionPanel);
+    this.add(ForegroundColorPanel);
+    this.add(BackgroundColorPanel);
+
+
+
+
     this.add(SettingsSubmitButton);
     this.add(SettingsSubmitButtonPanel);
 
@@ -151,6 +231,8 @@ public class MyFrame extends JFrame implements ActionListener{
 
     @Override
     public void actionPerformed(ActionEvent e){
+        ///         Button events          \\\
+        
         if (e.getSource() == PromptSettingTextFieldSubmitButton){
             bufferConfigFile.set(0,PromptSettingTextField.getText());
         }
@@ -159,16 +241,37 @@ public class MyFrame extends JFrame implements ActionListener{
             bufferConfigFile.set(1, PromptAdditionTextField.getText());
         }
 
+        if (e.getSource() == ForegroundColorTextFieldSubmitButton){
+            bufferConfigFile.set(2, ForegroundColorTextField.getText());
+        }
+
+        if (e.getSource() == BackgroundColorTextFieldSubmitButton){
+            bufferConfigFile.set(3, BackgroundColorTextField.getText());
+        }
+
+
+
+
+
+
+
+
+
+
+
+
         if (e.getSource() == SettingsSubmitButton){
-            IO.println("Test");
             try(FileWriter writer = new FileWriter(System.getProperty("user.home") + "/.config/tshell/config.tscfg")){
                 String cfg = "";
                 for(String str : bufferConfigFile){
                     cfg += str + "\n";
                 }
-                IO.println("\n\n\n\n\n" + cfg);
+                //IO.println("Settings saved Successfully");
+                JOptionPane.showMessageDialog(null, "Settings saved successfully");
                 writer.write(cfg);
                 writer.close();
+
+
                 
             } catch (Exception f){
                 JOptionPane.showMessageDialog(null, "Error encountered while saving changes. Aborting");
