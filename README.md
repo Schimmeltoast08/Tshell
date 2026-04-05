@@ -9,7 +9,7 @@ git clone https://github.com/Schimmeltoast08/Tshell.git
 cd Tshell/linux-binary
 mkdir ~/.config/tshell
 cp config.tscfg ~/.config/tshell
-./install.sh
+sudo ./install.sh
 
 ```
 The binary version **only works on linux**. It is faster and easier then the source code, but you can not modify it youself
@@ -57,3 +57,9 @@ inside of tshell:
 1. if you set the second line to "user@host", the prompt will be your username @ your hostname 
 2. if you set the second line to "showCWD" (show current working directory) and the first line to anything other then user@host, the prompt will be your working directory
 3. if you set the second line to doSlashSeperate and the first line to user@host, your prompt will be username/hostname>
+
+## Uninstall
+```
+sudo rm -r /opt/tshell
+sudo rm /usr/bin/tshell
+```
