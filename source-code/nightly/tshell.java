@@ -1,15 +1,21 @@
 import java.util.Scanner;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileReader;
+
 import java.net.InetAddress;
-import java.util.List;
+
+
 
 
 public class tshell {
     static String currentDirectory = System.getProperty("user.dir");
+    static ArrayList<String> history = new ArrayList<>();
     public static void main(String[] args) throws Exception {
         Boolean doExit = false;
         while (!doExit){
@@ -26,6 +32,7 @@ public class tshell {
         String promptBGColour = "";
         String guiDarkMode = "";
         MyFrame myframe = null; // for instanciation issue
+        
 
 
         ArrayList<String> configFile = new ArrayList<>();
@@ -72,6 +79,19 @@ public class tshell {
 
 
 
+        try {
+            String historyLine;
+            BufferedReader historyReader = new BufferedReader(new FileReader(System.getProperty("user.home") + "/.tshHistory"));
+            while ((historyLine = historyReader.readLine()) != null){
+                history.add(historyLine);
+
+            }
+
+            
+        } catch (IOException e) {
+            IO.println("could not open History file");
+        }
+
                                                     // CFG
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
         if (!(new File(System.getProperty("user.home") + "/.config/tshell").exists())){
@@ -102,6 +122,7 @@ public class tshell {
             System.out.print("<\\>" + shellStarterAdditionalString + " "); 
             }
             String prompt = scanner.nextLine();
+            history.add(prompt);
             if (prompt.equals("exit")){
                 doExit = true;
                 try{myframe.dispose();} catch (NullPointerException e){/* no panel to kill*/}
@@ -134,6 +155,15 @@ public class tshell {
                 doTry = false;
                 doPrintSlogan = false;
                 IO.println("Tshell version 2.3.0");
+                
+            }
+
+            if (prompt.startsWith("history")){
+                for (String s : history){
+                    IO.println(s);
+
+                }
+                
             }
 
             if (prompt.startsWith("tshell --gui")){
@@ -230,6 +260,23 @@ public class tshell {
            }
            doTry = true;
            doPrintSlogan = true;
+
+           try {
+               FileWriter historyWriter = new FileWriter(System.getProperty("user.home") + "/.tshHistory");
+               String historyString = "";
+               for (String s : history){
+                historyString += s + "\n";
+               }
+               historyWriter.write(historyString);
+
+               
+               historyWriter.close();
+
+
+
+
+           } catch (Exception e) {
+           }
             
 
         }
@@ -243,7 +290,7 @@ public class tshell {
         try{
             boolean shellBuiltIn = false;
             String prompt = input.substring(5);
-            String[] builtInCommands = {"type", "echo", "exit", "pwd", "cls"}; 
+            String[] builtInCommands = {"type", "echo", "exit", "pwd", "cls", "history"}; 
             for (String str : builtInCommands){
                 if (str.contains(prompt)){
                     IO.println(prompt + " is a shell builtin");
@@ -272,6 +319,8 @@ public class tshell {
             if (!commandExists){
                 IO.println(prompt + ": not found");
             }
+            
+            
 
                 
             }
@@ -314,6 +363,7 @@ public class tshell {
                             
                             @SuppressWarnings("unused")
                             int exitCode = process.waitFor(); // so it waits for finish + if i delete it a random error appears. Idk why
+
 
                             return true; // for commandNotFound 
                             

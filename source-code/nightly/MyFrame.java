@@ -5,9 +5,7 @@ import javax.swing.JTextField;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JCheckBox;
-import javax.swing.DefaultListModel;
-import javax.swing.JList;
-import javax.swing.JComboBox;
+
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -281,16 +279,6 @@ public class MyFrame extends JFrame implements ActionListener{
 
 
 
-/// TEST TODO:FIX Live updating list
-    DefaultListModel<String> listModel = new DefaultListModel<>();
-    JList<String> liveList = new JList<>(listModel);
-    String[] items = {""};
-    JComboBox<String> comboBox = new JComboBox<>(items);
-
-//TODO fix. continue tmr. too tired;
-///   \\\
-
-
 
 
 /// submit settings \\\
@@ -448,11 +436,6 @@ public class MyFrame extends JFrame implements ActionListener{
                 bufferConfigFile.set(22, "guiDarkMode");
             }
         }
-
-
-
-
-
 
 
         if (e.getSource() == ExitButton){
