@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 
 import java.net.InetAddress;
+import javax.swing.JOptionPane;
 
 
 
@@ -130,7 +131,9 @@ public class tshell {
             }
             
             if (prompt.startsWith("echo")){
-                IO.println(prompt.substring(5));
+                try {
+                    IO.println(prompt.substring(5));
+                } catch (StringIndexOutOfBoundsException e){}
                 isValid = true;
                 doTry = false;
             } // echo is a binary file for me
@@ -165,6 +168,7 @@ public class tshell {
                 }
                 
             }
+            
 
             if (prompt.startsWith("tshell --gui")){
                 isValid = true;
@@ -174,7 +178,12 @@ public class tshell {
                 if (!(guiDarkMode.equals("guiDarkMode"))){
                     doDarkMode = false;
                 }
+                try{
                 myframe = new MyFrame(doDarkMode, configFile);
+                } catch (Exception e){
+                    JOptionPane.showMessageDialog(null, "Could not open settings window. If you are on wayland, is XWayland running? ");
+                    // still throws java error instead of my error. Immidiately terminates for some reason even tho it's in try block
+                }
                 while (true){
                     if(myframe.doExit){
                         myframe.dispose();
@@ -261,21 +270,17 @@ public class tshell {
            doTry = true;
            doPrintSlogan = true;
 
-           try {
-               FileWriter historyWriter = new FileWriter(System.getProperty("user.home") + "/.tshHistory");
+           try(FileWriter historyWriter = new FileWriter(System.getProperty("user.home") + "/.tshHistory")){
+               
                String historyString = "";
                for (String s : history){
                 historyString += s + "\n";
                }
                historyWriter.write(historyString);
 
-               
-               historyWriter.close();
 
-
-
-
-           } catch (Exception e) {
+           } catch (IOException e) {
+            IO.println("Could not write to history");
            }
             
 
@@ -520,7 +525,8 @@ static void suggest(String input) {
     for (String cmd : getAllCommands()) {
         if (cmd.startsWith(input)) {
             System.out.println("  " + cmd);
-        }
+        } 
+    
     }
 }
 
