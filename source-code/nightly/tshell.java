@@ -9,7 +9,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 
 import java.net.InetAddress;
+
 import javax.swing.JOptionPane;
+
 
 
 
@@ -19,9 +21,12 @@ public class tshell {
     static ArrayList<String> aliases = new ArrayList<>();
     static ArrayList<String> LeftAlias = new ArrayList<>();
     static ArrayList<String> RightAlias = new ArrayList<>();
+    static final int MaxHistorySize = 1000;
     public static void main(String[] args) throws Exception {
         Boolean doExit = false;
-        while (!doExit){
+        loadHistory();
+
+
         Scanner scanner = new Scanner(System.in);
         boolean doTry = true;
         boolean doPrintSlogan = true;
@@ -35,7 +40,7 @@ public class tshell {
         String promptBGColour = "";
         String guiDarkMode = "";
         MyFrame myframe = null; // for instanciation issue
-        
+        while(!doExit){
 
 
         ArrayList<String> configFile = new ArrayList<>();
@@ -78,22 +83,6 @@ public class tshell {
             }
          }
         } catch (Exception e){IO.println("Empty shell config!");}
-
-
-
-
-        try {
-            String historyLine;
-            BufferedReader historyReader = new BufferedReader(new FileReader(System.getProperty("user.home") + "/.tshHistory"));
-            while ((historyLine = historyReader.readLine()) != null){
-                history.add(historyLine);
-
-            }
-
-            
-        } catch (IOException e) {
-            IO.println("could not open History file");
-        }
 
 
         String aliasPath = System.getProperty("user.home") + "/.config/tshell/aliases.tscfg";
@@ -158,6 +147,11 @@ public class tshell {
             }
             String prompt = scanner.nextLine();
             history.add(prompt);
+
+            if (history.size() > MaxHistorySize) { 
+                history.remove(0);  // only in memmory aka ArrayList. File can get infinite //byDesign
+
+}
             if (prompt.equals("exit")){
                 doExit = true;
                 try{myframe.dispose();} catch (NullPointerException e){/* no panel to kill*/}
@@ -201,6 +195,10 @@ public class tshell {
 
                 }
                 
+            }
+
+            if (prompt.startsWith("emptyHistory")){
+                emptyHistory();
             }
             
 
@@ -298,24 +296,23 @@ public class tshell {
             try{
                 suggest(prompt);
             } catch (Exception e){}
-            //IO.println(prompt + ": command not found");
+
            }
            }
            doTry = true;
            doPrintSlogan = true;
 
-           try(FileWriter historyWriter = new FileWriter(System.getProperty("user.home") + "/.tshHistory")){
-               
-               String historyString = "";
-               for (String s : history){
-                historyString += s + "\n";
-               }
-               historyWriter.write(historyString);
+           try(FileWriter historyWriter = new FileWriter(System.getProperty("user.home") + "/.tshHistory", true)){
+
+               historyWriter.write(prompt + "\n");
                
 
 
            } catch (IOException e) {
             IO.println("Could not write to history. Hit E for error code");
+            if (scanner.nextLine().toLowerCase().equals("e")){
+                IO.println(e);
+            }
            }
             
 
@@ -592,6 +589,7 @@ static List<String> getAllCommands() {
             }
         }
     }
+
     ArrayList<String> sanetizedCmds = new ArrayList<>();
     for (String cmd : cmds){
         if (!(sanetizedCmds.contains(cmd))){
@@ -602,6 +600,36 @@ static List<String> getAllCommands() {
     return sanetizedCmds;
 }
 //////////////////////////////
+
+static void emptyHistory() {
+    String historyFilePath = (System.getProperty("user.home") + "/.tshHistory");
+    try{
+    FileWriter historyWriter = new FileWriter(historyFilePath, false);
+    historyWriter.write("");
+    historyWriter.close();
+    history.clear();
+
+
+
+
+    } catch (IOException e){
+        IO.println("Could not delete history file");
+    }
+}
+static void loadHistory() {
+    history.clear(); 
+
+    try (BufferedReader reader = new BufferedReader(new FileReader(System.getProperty("user.home") + "/.tshHistory"))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            history.add(line);
+        }
+
+    } catch (IOException e) {
+        IO.println("could not open History file");
+    }
+}
+
 
 }
 
