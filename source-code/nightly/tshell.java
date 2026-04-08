@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import javax.swing.JOptionPane;
 
@@ -21,26 +22,22 @@ public class tshell {
     static ArrayList<String> aliases = new ArrayList<>();
     static ArrayList<String> LeftAlias = new ArrayList<>();
     static ArrayList<String> RightAlias = new ArrayList<>();
-    static final int MaxHistorySize = 1000;
+    static final int MAX_HISTORY_SIZE = 1000; // i hate the name but it's the naming convention :/
+    
     public static void main(String[] args) throws Exception {
-        Boolean doExit = false;
-        loadHistory();
-
-
         Scanner scanner = new Scanner(System.in);
+        Boolean doExit = false;
+
+        Config config = loadConfig();
+        loadHistory();
+        loadAliases();
+        initConfigIfNotExists();
+
         boolean doTry = true;
         boolean doPrintSlogan = true;
-        String shellStarterString = "";
-        String asciiArtStringFromConfig = """
-        """;
-        String preferedConfigEditor = "vim";
-        String shellStarterAdditionalString = "";
-        boolean doReloadAfterConfigEdit = false;
-        String promptFGColour = "White";
-        String promptBGColour = "";
-        String guiDarkMode = "";
         MyFrame myframe = null; // for instanciation issue
-        while(!doExit){
+
+        while(!doExit){ // for exit command to break whole thing
 
 
         ArrayList<String> configFile = new ArrayList<>();
@@ -54,26 +51,26 @@ public class tshell {
             } catch (IOException e){
                 IO.println("Exception: Config file not found. Generating new empty config");
             }
-            shellStarterAdditionalString = configFile.get(1).trim();
+            config.shellStarterAdditionalString = configFile.get(1).trim();
         try{
-         shellStarterString = configFile.get(0);
-         preferedConfigEditor = configFile.get(20);
-         promptFGColour = configFile.get(2);
-         promptBGColour = configFile.get(3);
+            config.shellStarterString = configFile.get(0);
+            config. preferedConfigEditor = configFile.get(20);
+            config.promptFGColour = configFile.get(2);
+            config.promptBGColour = configFile.get(3);
          try {
             if (configFile.get(21).equalsIgnoreCase("doReloadAfterConfigEdit")){
-                doReloadAfterConfigEdit = true;
+                config.doReloadAfterConfigEdit = true;
             }
              
          } catch (Exception e) {}
-         try { guiDarkMode = configFile.get(22);} catch (Exception e){}
+         try { config.guiDarkMode = configFile.get(22);} catch (Exception e){}
          try {
             String newLine = System.getProperty("line.separator");
             for (int i = 4; i < 18; i++ ){
                 
                 
-                    asciiArtStringFromConfig += configFile.get(i);
-                    asciiArtStringFromConfig += newLine;
+                    config.asciiArtString += configFile.get(i);
+                    config.asciiArtString += newLine;
                 
             }
              
@@ -85,70 +82,16 @@ public class tshell {
         } catch (Exception e){IO.println("Empty shell config!");}
 
 
-        String aliasPath = System.getProperty("user.home") + "/.config/tshell/aliases.tscfg";
-
-        try {
-            if (!(new File(aliasPath).exists())){
-                new File(aliasPath).createNewFile();
-            }
-            BufferedReader aliasReader = new BufferedReader(new FileReader(aliasPath));
-            String aliasLine;
-            while ((aliasLine = aliasReader.readLine()) != null){
-                aliases.add(aliasLine);                
-            }
-
-            
-            for (String s : aliases){
-                String[] aliasParts = s.split("=", 2);
-
-                LeftAlias.add(aliasParts[0]);
-                RightAlias.add(aliasParts[1]);
-            }
-
-            
-            
-        } catch (IOException e) {
-            IO.println("Error: Could not open alias File at " + aliasPath + ". Press E for full Error ");
-            @SuppressWarnings("unused")
-            errorTimerThread aliasErrorThread = new errorTimerThread();
-            if (scanner.nextLine().toLowerCase().equals("e")){
-                IO.println(e);
-            }
-        }
-
-                                                    // CFG
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
-        if (!(new File(System.getProperty("user.home") + "/.config/tshell").exists())){
-        new File(System.getProperty("user.home") + "/.config/tshell").mkdir();
-        }
-        if (!(new File(System.getProperty("user.home") + "/.config/tshell/config.tscfg").exists())){
-            new File(System.getProperty("user.home") + "/.config/tshell/config.tscfg").createNewFile();
-
-        }
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+ 
 
         while (true){
             boolean isValid = false;
-            if (!(shellStarterString.isEmpty())){
-                if (shellStarterString.startsWith("user@host")){
-                    if (shellStarterAdditionalString.equals("doSlashSeperate")){
-                        printColour((System.getProperty("user.name") + "/" + InetAddress.getLocalHost().getHostName() + "> "),promptFGColour, promptBGColour);
-                    } else {
-                            printColour((System.getProperty("user.name") + "@" + InetAddress.getLocalHost().getHostName() + shellStarterAdditionalString +" "),promptFGColour,promptBGColour);
-                        }
-                    } else if (shellStarterAdditionalString.equals("showCWD")){
-                        printColour((currentDirectory + ">" + "\u001B[0m "), promptFGColour, promptBGColour);
-                    } else {
-                    printColour((shellStarterString + shellStarterAdditionalString + " "), promptFGColour, promptBGColour);
-                  }     
-            } else{
-            System.out.print("<\\>" + shellStarterAdditionalString + " "); 
-            }
+            renderPrompt(config);
+            
             String prompt = scanner.nextLine();
             history.add(prompt);
 
-            if (history.size() > MaxHistorySize) { 
+            if (history.size() > MAX_HISTORY_SIZE) { 
                 history.remove(0);  // only in memmory aka ArrayList. File can get infinite //byDesign
 
 }
@@ -176,7 +119,6 @@ public class tshell {
             if (prompt.startsWith("pwd")){
                 isValid = true;
                 doTry = false;
-                //IO.println(getCurrentWorkingDirectory());
                 IO.println(currentDirectory);
 
             }
@@ -207,7 +149,7 @@ public class tshell {
                 doTry = false;
                 doPrintSlogan = false;
                 Boolean doDarkMode = true;
-                if (!(guiDarkMode.equals("guiDarkMode"))){
+                if (!(config.guiDarkMode.equals("guiDarkMode"))){
                     doDarkMode = false;
                 }
                 try{
@@ -222,7 +164,7 @@ public class tshell {
                         break;
                     }
                 }
-                if (doReloadAfterConfigEdit){
+                if (config.doReloadAfterConfigEdit){
                     printColour("reloading shell", "Green");
                     break;
                 }
@@ -230,6 +172,7 @@ public class tshell {
 
             if (prompt.startsWith("tshell --reload")){
                 printColour("reoloading shell", "Green");
+                config = loadConfig();
                 break;
             }
 
@@ -239,8 +182,8 @@ public class tshell {
                 doPrintSlogan = false;
                 if (prompt.startsWith("tshell -cfg")){
                     try {
-                        executeCommand(preferedConfigEditor + " " +  System.getProperty("user.home") + "/.config/tshell/config.tscfg");
-                        if (doReloadAfterConfigEdit){
+                        executeCommand(config.preferedConfigEditor + " " +  System.getProperty("user.home") + "/.config/tshell/config.tscfg");
+                        if (config.doReloadAfterConfigEdit){
                             printColour("Auto reloading shell after config edit", "Green");
                             break;
                         }
@@ -255,7 +198,7 @@ public class tshell {
 
 
             if (prompt.startsWith("tshell -l")){
-                printAscii(asciiArtStringFromConfig);
+                printAscii(config.asciiArtString);
                 doTry = false;
                 isValid = true;
                 doPrintSlogan = false;
@@ -310,6 +253,9 @@ public class tshell {
 
            } catch (IOException e) {
             IO.println("Could not write to history. Hit E for error code");
+
+                // ignore warning, it does its job and @
+             new errorTimerThread(); 
             if (scanner.nextLine().toLowerCase().equals("e")){
                 IO.println(e);
             }
@@ -327,7 +273,7 @@ public class tshell {
         try{
             boolean shellBuiltIn = false;
             String prompt = input.substring(5);
-            String[] builtInCommands = {"type", "echo", "exit", "pwd", "cls", "history"}; 
+            String[] builtInCommands = {"type", "echo", "exit", "pwd", "cls", "history", "emptyHistory", "tshell"}; 
             for (String str : builtInCommands){
                 if (str.contains(prompt)){
                     IO.println(prompt + " is a shell builtin");
@@ -424,14 +370,9 @@ public class tshell {
 
 
 public static void clearScreen() {  
-    System.out.print("\033[H\033[2J");
+    System.out.print("\033[H\033[2J"); // resets color;
     System.out.flush();
 } 
-
-
-public static String getCurrentWorkingDirectory(){
-     return System.getProperty("user.dir");
-}
 
 
 public static void changeCurrentWorkingDirectory(String input){
@@ -589,7 +530,7 @@ static List<String> getAllCommands() {
             }
         }
     }
-
+//////////////////////////////
     ArrayList<String> sanetizedCmds = new ArrayList<>();
     for (String cmd : cmds){
         if (!(sanetizedCmds.contains(cmd))){
@@ -599,23 +540,22 @@ static List<String> getAllCommands() {
 
     return sanetizedCmds;
 }
-//////////////////////////////
+
 
 static void emptyHistory() {
     String historyFilePath = (System.getProperty("user.home") + "/.tshHistory");
-    try{
-    FileWriter historyWriter = new FileWriter(historyFilePath, false);
+    try (FileWriter historyWriter = new FileWriter(historyFilePath, false)){
     historyWriter.write("");
     historyWriter.close();
     history.clear();
-
-
 
 
     } catch (IOException e){
         IO.println("Could not delete history file");
     }
 }
+
+
 static void loadHistory() {
     history.clear(); 
 
@@ -630,6 +570,128 @@ static void loadHistory() {
     }
 }
 
+
+static void loadAliases(){
+            Scanner scanner = new Scanner(System.in);
+           String aliasPath = System.getProperty("user.home") + "/.config/tshell/aliases.tscfg";
+
+        try {
+            if (!(new File(aliasPath).exists())){
+                new File(aliasPath).createNewFile();
+            }
+            BufferedReader aliasReader = new BufferedReader(new FileReader(aliasPath));
+            String aliasLine;
+            while ((aliasLine = aliasReader.readLine()) != null){
+                aliases.add(aliasLine);                
+            }
+
+            
+            for (String s : aliases){
+                String[] aliasParts = s.split("=", 2);
+
+                LeftAlias.add(aliasParts[0]);
+                RightAlias.add(aliasParts[1]);
+            }
+
+            
+            
+        } catch (IOException e) {
+            IO.println("Error: Could not open alias File at " + aliasPath + ". Press E for full Error ");
+            @SuppressWarnings("unused")
+            errorTimerThread aliasErrorThread = new errorTimerThread();
+            if (scanner.nextLine().toLowerCase().equals("e")){
+                IO.println(e);
+            }
+        }
+}
+
+static Config loadConfig() {
+    Config config = new Config();
+
+    String filepath = System.getProperty("user.home") + "/.config/tshell/config.tscfg";
+    try (BufferedReader reader = new BufferedReader(new FileReader(filepath));) {
+
+        
+        ArrayList<String> configFile = new ArrayList<>();
+        String line;
+
+        while ((line = reader.readLine()) != null) {
+            configFile.add(line);
+        }
+
+
+        config.shellStarterString = configFile.get(0);
+        config.shellStarterAdditionalString = configFile.get(1).trim();
+        config.promptFGColour = configFile.get(2);
+        config.promptBGColour = configFile.get(3);
+        config.preferedConfigEditor = configFile.get(20);
+
+        if (configFile.get(21).equalsIgnoreCase("doReloadAfterConfigEdit")) {
+            config.doReloadAfterConfigEdit = true;
+        }
+
+
+        StringBuilder ascii = new StringBuilder();
+        String newLine = System.lineSeparator();
+        
+        if(!(config.asciiArtString.isEmpty() || config.asciiArtString.isBlank())){
+        for (int i = 4; i < 18; i++) {
+            ascii.append(configFile.get(i)).append(newLine);
+        }
+
+        config.asciiArtString = ascii.toString();
+        }
+
+
+    } catch (Exception e) {
+        IO.println("Error loading config: " + e);
+    }
+
+    return config; 
+}
+
+
+
+static void renderPrompt(Config config){
+    try{
+    if (!(config.shellStarterString.isEmpty())){
+                if (config.shellStarterString.startsWith("user@host")){
+                    if (config.shellStarterAdditionalString.equals("doSlashSeperate")){
+                        printColour((System.getProperty("user.name") + "/" + InetAddress.getLocalHost().getHostName() + "> "),config.promptFGColour, config.promptBGColour);
+                    } else {
+                            printColour((System.getProperty("user.name") + "@" + InetAddress.getLocalHost().getHostName() + config.shellStarterAdditionalString +" "),config.promptFGColour,config.promptBGColour);
+                        }
+                    } else if (config.shellStarterAdditionalString.equals("showCWD")){
+                        printColour((currentDirectory + ">" + "\u001B[0m "), config.promptFGColour, config.promptBGColour);
+                    } else {
+                    printColour((config.shellStarterString + config.shellStarterAdditionalString + " "), config.promptFGColour, config.promptBGColour);
+                  }     
+            } else{
+            System.out.print("<\\>" + config.shellStarterAdditionalString + " "); 
+            }
+    } catch (UnknownHostException e){
+        IO.println("Error fetching Host");
+    } catch (Exception e) {
+        IO.println("Error rendering prompt");
+    }
+}
+
+static void initConfigIfNotExists(){
+    try{
+        File configDir = new File(System.getProperty("user.home") + "/.config/tshell");
+        if (!(configDir.exists())){
+        configDir.mkdir();
+        }
+
+        File config = new File(System.getProperty("user.home") + "/.config/tshell/config.tscfg");
+        if (!(config.exists())){
+            config.createNewFile();
+
+        }
+    } catch (IOException e){
+        IO.println("Could not init config file or config directory");
+    }
+}
 
 }
 
