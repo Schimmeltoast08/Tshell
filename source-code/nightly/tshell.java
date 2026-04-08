@@ -1,6 +1,7 @@
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -17,6 +18,9 @@ import javax.swing.JOptionPane;
 public class tshell {
     static String currentDirectory = System.getProperty("user.dir");
     static ArrayList<String> history = new ArrayList<>();
+    static ArrayList<String> aliases = new ArrayList<>();
+    static ArrayList<String> LeftAlias = new ArrayList<>();
+    static ArrayList<String> RightAlias = new ArrayList<>();
     public static void main(String[] args) throws Exception {
         Boolean doExit = false;
         while (!doExit){
@@ -93,6 +97,39 @@ public class tshell {
             IO.println("could not open History file");
         }
 
+
+        String aliasPath = System.getProperty("user.home") + "/.config/tshell/aliases.tscfg";
+
+        try {
+            if (!(new File(aliasPath).exists())){
+                new File(aliasPath).createNewFile();
+            }
+            BufferedReader aliasReader = new BufferedReader(new FileReader(aliasPath));
+            String aliasLine;
+            while ((aliasLine = aliasReader.readLine()) != null){
+                aliases.add(aliasLine);                
+            }
+            //IO.println(Arrays.toString((aliases.get(0)).split("=")));
+            
+            for (String s : aliases){
+                String[] aliasParts = s.split("=");
+                //IO.println(Arrays.toString(aliasParts));
+                LeftAlias.add(aliasParts[0]);
+                RightAlias.add(aliasParts[1]);
+            }
+
+
+            
+            
+        } catch (Exception e) {
+            IO.println("Error: Could not open alias File at " + aliasPath + ". Press E for full Error ");
+            @SuppressWarnings("unused")
+            errorTimerThread aliasErrorThread = new errorTimerThread();
+            if (scanner.nextLine().toLowerCase().equals("e")){
+                IO.println(e);
+            }
+        }
+
                                                     // CFG
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
         if (!(new File(System.getProperty("user.home") + "/.config/tshell").exists())){
@@ -157,7 +194,7 @@ public class tshell {
                 isValid = true;
                 doTry = false;
                 doPrintSlogan = false;
-                IO.println("Tshell version 2.3.0");
+                IO.println("Tshell version 3.0.0");
                 
             }
 
@@ -277,10 +314,11 @@ public class tshell {
                 historyString += s + "\n";
                }
                historyWriter.write(historyString);
+               
 
 
            } catch (IOException e) {
-            IO.println("Could not write to history");
+            IO.println("Could not write to history. Hit E for error code");
            }
             
 
@@ -304,30 +342,26 @@ public class tshell {
                 }
             }
             if (!shellBuiltIn){
-            String[] possiblePaths = path.split(pathSeparator);
-            boolean commandExists = false;
-            for (String currentPath : possiblePaths){
-                try {
-                    currentPath += "/" + prompt;
-                    File file = new File(currentPath);
-                    if (file.exists()){
-                        if (file.canExecute()){
-                            IO.println(prompt + " is " + currentPath);
-                            commandExists = true;
-                            break;
-                        } 
-                        
-                    }
-                } catch (Exception e) {IO.println("Could not resolve command: " + e);}
+                String[] possiblePaths = path.split(pathSeparator);
+                boolean commandExists = false;
+                for (String currentPath : possiblePaths){
+                    try {
+                        currentPath += "/" + prompt;
+                        File file = new File(currentPath);
+                        if (file.exists()){
+                            if (file.canExecute()){
+                                IO.println(prompt + " is " + currentPath);
+                                commandExists = true;
+                                break;
+                            } 
+                            
+                        }
+                    } catch (Exception e) {IO.println("Could not resolve command: " + e);}
 
-            }
-            if (!commandExists){
-                IO.println(prompt + ": not found");
-            }
-            
-            
-
-                
+                }
+                    if (!commandExists){
+                        IO.println(prompt + ": not found");
+                    }  
             }
 
 
@@ -341,11 +375,13 @@ public class tshell {
 
 
  static boolean executeCommand(String prompt){
+
         String pathSeparator = File.pathSeparator;
         String path = System.getenv("PATH");
         String[] possiblePaths = path.split(pathSeparator);
         String[] shortPrompt = prompt.split(" ");
         ArrayList<String> argStr = new ArrayList<>();
+
         for (int i = 1; i < shortPrompt.length; i++){
             argStr.add(shortPrompt[i]);
         }
@@ -376,11 +412,19 @@ public class tshell {
                             
                         } 
                         
-                    }
+                    } 
                 }   catch (IOException | InterruptedException e) {
                         IO.println("Could not execute command: " + e);
                     }
-        } return false;
+
+                    
+        } 
+        if (LeftAlias.contains(prompt)) {
+            int idx = LeftAlias.indexOf(prompt);
+            executeCommand(RightAlias.get(idx));
+                        
+                    }
+        return false;
 
     }
 
