@@ -113,7 +113,7 @@ public class tshell {
 
             
             for (String s : aliases){
-                String[] aliasParts = s.split("=");
+                String[] aliasParts = s.split("=", 2);
 
                 LeftAlias.add(aliasParts[0]);
                 RightAlias.add(aliasParts[1]);

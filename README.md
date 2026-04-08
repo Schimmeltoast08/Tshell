@@ -58,6 +58,14 @@ inside of tshell:
 |  21  | Text editor | Any text editor | Sets the text editor used by tshell -cfg |
 |  22  | Reload behaviour | doReloadAfterConfigEdit | Setting for if the shell should restart after editing the config |
 
+## Aliases
+to create an Alias, put it in ~/.config/tshell/aliases.tscfg
+Syntax:
+```
+command=command2
+```
+each new statement must be on a new line. In this example, if you type command it will execute command2 **unless command exists**. This ensures you will not softlock yourself or interfier with other programms.
+
 ### Secret functions
 1. if you set the second line to "user@host", the prompt will be your username @ your hostname 
 2. if you set the second line to "showCWD" (show current working directory) and the first line to anything other then user@host, the prompt will be your working directory
