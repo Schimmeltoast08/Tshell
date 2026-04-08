@@ -53,7 +53,7 @@ public class MyFrame extends JFrame implements ActionListener{
 
 
     MyFrame(Boolean doDarkMode, ArrayList<String> configFile){
-        Color fontColor = new Color(0x000000);
+        Color fontColor;
         Color OddPanelColor;
         Color EvenPanelColor;
         this.bufferConfigFile = configFile;

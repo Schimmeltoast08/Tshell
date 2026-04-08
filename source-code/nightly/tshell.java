@@ -1,7 +1,8 @@
+
+
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Arrays;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -109,19 +110,18 @@ public class tshell {
             while ((aliasLine = aliasReader.readLine()) != null){
                 aliases.add(aliasLine);                
             }
-            //IO.println(Arrays.toString((aliases.get(0)).split("=")));
+
             
             for (String s : aliases){
                 String[] aliasParts = s.split("=");
-                //IO.println(Arrays.toString(aliasParts));
+
                 LeftAlias.add(aliasParts[0]);
                 RightAlias.add(aliasParts[1]);
             }
 
-
             
             
-        } catch (Exception e) {
+        } catch (IOException e) {
             IO.println("Error: Could not open alias File at " + aliasPath + ". Press E for full Error ");
             @SuppressWarnings("unused")
             errorTimerThread aliasErrorThread = new errorTimerThread();
