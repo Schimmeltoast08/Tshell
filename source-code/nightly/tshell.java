@@ -22,8 +22,9 @@ public class tshell {
     static ArrayList<String> aliases = new ArrayList<>();
     static ArrayList<String> LeftAlias = new ArrayList<>();
     static ArrayList<String> RightAlias = new ArrayList<>();
+    //static ArrayList<String> configFile = new ArrayList<>();
     static final int MAX_HISTORY_SIZE = 1000; // i hate the name but it's the naming convention :/
-    
+
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
         Boolean doExit = false;
@@ -39,50 +40,9 @@ public class tshell {
 
         while(!doExit){ // for exit command to break whole thing
 
-
-        ArrayList<String> configFile = new ArrayList<>();
-        try{
-            String filepath = System.getProperty("user.home") + "/.config/tshell/config.tscfg";
-            BufferedReader reader = new BufferedReader(new FileReader(filepath));
-            String line;
-            while ((line = reader.readLine()) != null){
-                configFile.add(line);
-            }
-            } catch (IOException e){
-                IO.println("Exception: Config file not found. Generating new empty config");
-            }
-            config.shellStarterAdditionalString = configFile.get(1).trim();
-        try{
-            config.shellStarterString = configFile.get(0);
-            config. preferedConfigEditor = configFile.get(20);
-            config.promptFGColour = configFile.get(2);
-            config.promptBGColour = configFile.get(3);
-         try {
-            if (configFile.get(21).equalsIgnoreCase("doReloadAfterConfigEdit")){
-                config.doReloadAfterConfigEdit = true;
-            }
-             
-         } catch (Exception e) {}
-         try { config.guiDarkMode = configFile.get(22);} catch (Exception e){}
-         try {
-            String newLine = System.getProperty("line.separator");
-            for (int i = 4; i < 18; i++ ){
-                
-                
-                    config.asciiArtString += configFile.get(i);
-                    config.asciiArtString += newLine;
-                
-            }
-             
-         } catch (Exception e) { 
-            if(!(configFile.get(19).equalsIgnoreCase("ignoreEmptyAsciiArtWarning"))){
-                IO.println("No ascii art in config, using default" + e);
-            }
-         }
-        } catch (Exception e){IO.println("Empty shell config!");}
-
-
- 
+        if (!(config.startUpCommand.isEmpty())){
+            executeCommand(config.startUpCommand);
+        }
 
         while (true){
             boolean isValid = false;
@@ -153,7 +113,7 @@ public class tshell {
                     doDarkMode = false;
                 }
                 try{
-                myframe = new MyFrame(doDarkMode, configFile);
+                myframe = new MyFrame(doDarkMode, ConfigObjectToArrayList(config));
                 } catch (Exception e){
                     JOptionPane.showMessageDialog(null, "Could not open settings window. If you are on wayland, is XWayland running? ");
                     // still throws java error instead of my error. Immidiately terminates for some reason even tho it's in try block
@@ -165,6 +125,7 @@ public class tshell {
                     }
                 }
                 if (config.doReloadAfterConfigEdit){
+                    config = loadConfig();
                     printColour("reloading shell", "Green");
                     break;
                 }
@@ -624,17 +585,20 @@ static Config loadConfig() {
         config.shellStarterAdditionalString = configFile.get(1).trim();
         config.promptFGColour = configFile.get(2);
         config.promptBGColour = configFile.get(3);
+        config.startUpCommand = configFile.get(19);
         config.preferedConfigEditor = configFile.get(20);
 
         if (configFile.get(21).equalsIgnoreCase("doReloadAfterConfigEdit")) {
             config.doReloadAfterConfigEdit = true;
         }
 
+        
+
 
         StringBuilder ascii = new StringBuilder();
         String newLine = System.lineSeparator();
         
-        if(!(config.asciiArtString.isEmpty() || config.asciiArtString.isBlank())){
+        if((config.asciiArtString.isEmpty() || config.asciiArtString.isBlank())){
         for (int i = 4; i < 18; i++) {
             ascii.append(configFile.get(i)).append(newLine);
         }
@@ -691,6 +655,28 @@ static void initConfigIfNotExists(){
     } catch (IOException e){
         IO.println("Could not init config file or config directory");
     }
+}
+
+static ArrayList<String> ConfigObjectToArrayList(Config config){
+    ArrayList<String> ret = new ArrayList<>();
+    
+    ret.add(config.shellStarterString);
+    ret.add(config.shellStarterAdditionalString);
+    ret.add(config.promptFGColour);
+    ret.add(config.promptBGColour);
+    for (int i = 5; i < 20; i++){ // weird cuz easier for config
+    ret.add(""); // myFrame doesn't care abt ascii
+
+    }
+    ret.add(config.startUpCommand);
+    ret.add(config.preferedConfigEditor);
+    ret.add(Boolean.toString(config.doReloadAfterConfigEdit));
+    ret.add(config.guiDarkMode);
+
+    return ret;
+    
+
+    
 }
 
 }

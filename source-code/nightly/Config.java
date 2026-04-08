@@ -14,6 +14,10 @@ public class Config {
     String promptFGColour = "White";
     String promptBGColour = "";
     String guiDarkMode = "";
+    String startUpCommand = "";
+
+    /////////////////////// 
+    // WHEN ADDING SMT NEW, REMEMBER configObjectToArrayList
 
 static Config loadConfig() {
     Config cfg = new Config();
@@ -22,6 +26,7 @@ static Config loadConfig() {
     cfg.promptFGColour = "White";
 
     return cfg;
+
 }
 
 

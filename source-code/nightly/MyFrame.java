@@ -31,7 +31,7 @@ public class MyFrame extends JFrame implements ActionListener{
     JButton SettingsSubmitButton;
     JButton ForegroundColorTextFieldSubmitButton;
     JButton BackgroundColorTextFieldSubmitButton;
-    JButton IgnoreEmptyAsciiWarningSubmitButton;
+    JButton StartingCommandSubmitButton;
     JButton ExitButton;
     JButton TxtEditSubmitButton;
     JButton ReloadConfEditSubmitButton;
@@ -42,8 +42,9 @@ public class MyFrame extends JFrame implements ActionListener{
     JTextField ForegroundColorTextField;
     JTextField BackgroundColorTextField;
     JTextField TxtEditTextField;
+    JTextField StartingCommandTextField;
 
-    JCheckBox IgnoreEmptyAsciiWarningCheckbox;
+
     JCheckBox ReloadConfEditCheckbox;
     JCheckBox DarkmodeCheckbox;
 
@@ -167,36 +168,37 @@ public class MyFrame extends JFrame implements ActionListener{
 /// BG COL \\\
 
 
-/// IgnoreEmptyAsciiWarning \\\
+/// StartingCommand \\\
 
-    JLabel IgnoreEmptyAsciiWarning = new JLabel("Ignore Empty Ascii Warning: ");
-    IgnoreEmptyAsciiWarning.setForeground(fontColor);
-    IgnoreEmptyAsciiWarning.setBounds(0,200,300,50);
+    JLabel StartingCommand = new JLabel("Starting Command: ");
+    StartingCommand.setForeground(fontColor);
+    StartingCommand.setBounds(0,200,300,50);
 
-    JPanel IgnoreEmptyAsciiWarningPanel = new JPanel();
-    IgnoreEmptyAsciiWarningPanel.setBackground(OddPanelColor);
-    IgnoreEmptyAsciiWarningPanel.setBounds(0,200,1000,50);
-    IgnoreEmptyAsciiWarningPanel.setLayout(null);
+    JPanel StartingCommandPanel = new JPanel();
+    StartingCommandPanel.setBackground(OddPanelColor);
+    StartingCommandPanel.setBounds(0,200,1000,50);
+    StartingCommandPanel.setLayout(null);
 
-    IgnoreEmptyAsciiWarningCheckbox = new JCheckBox();
-    IgnoreEmptyAsciiWarningCheckbox.setBounds(700,200,200,50);
+    StartingCommandTextField = new JTextField();
+    StartingCommandTextField.setText(configFile.get(19));
+    StartingCommandTextField.setBounds(700,200,200,50);
 
-    IgnoreEmptyAsciiWarningSubmitButton = new JButton("Submit");
-    IgnoreEmptyAsciiWarningSubmitButton.setBounds(900,200,100,50);
-    IgnoreEmptyAsciiWarningSubmitButton.addActionListener(this);
+    StartingCommandSubmitButton = new JButton("Submit");
+    StartingCommandSubmitButton.setBounds(900,200,100,50);
+    StartingCommandSubmitButton.addActionListener(this);
 
 
-    if (configFile.get(19).equals("ignoreEmptyAsciiArtWarning")) {
-        IgnoreEmptyAsciiWarningCheckbox.setSelected(true);
+    /*if (configFile.get(19).equals("ignoreEmptyAsciiArtWarning")) {
+        StartingCommandTextField.setSelected(true);
     } else {
-        IgnoreEmptyAsciiWarningCheckbox.setSelected(false);
-    }
+        StartingCommandTextField.setSelected(false);
+    }*/
 
 
 
 
 
-/// IgnoreEmptyAsciiWarning \\\
+/// StartingCommand \\\
 
 
 
@@ -337,7 +339,7 @@ public class MyFrame extends JFrame implements ActionListener{
     this.add(PromptAddition);
     this.add(ForegroundColor);
     this.add(BackgroundColor);
-    this.add(IgnoreEmptyAsciiWarning);
+    this.add(StartingCommand);
     this.add(TxtEdit);
     this.add(ReloadConfEdit);
     this.add(Darkmode);
@@ -352,12 +354,12 @@ public class MyFrame extends JFrame implements ActionListener{
     this.add(PromptAdditionTextFieldSubmitButton);
     this.add(ForegroundColorTextFieldSubmitButton);
     this.add(BackgroundColorTextFieldSubmitButton);
-    this.add(IgnoreEmptyAsciiWarningSubmitButton);
+    this.add(StartingCommandSubmitButton);
     this.add(TxtEditSubmitButton);
     this.add(ReloadConfEditSubmitButton);
     this.add(DarkmodeSubmitButton);
 
-    this.add(IgnoreEmptyAsciiWarningCheckbox);
+    this.add(StartingCommandTextField);
     this.add(ReloadConfEditCheckbox);
     this.add(DarkmodeCheckbox);
 
@@ -365,7 +367,7 @@ public class MyFrame extends JFrame implements ActionListener{
     this.add(PromptAdditionPanel);
     this.add(ForegroundColorPanel);
     this.add(BackgroundColorPanel);
-    this.add(IgnoreEmptyAsciiWarningPanel);
+    this.add(StartingCommandPanel);
     this.add(TxtEditPanel);
     this.add(ReloadConfEditPanel);
     this.add(DarkmodePanel);
@@ -406,15 +408,11 @@ public class MyFrame extends JFrame implements ActionListener{
         }
 
 
-         if (e.getSource() == IgnoreEmptyAsciiWarningSubmitButton){
-            if (!(IgnoreEmptyAsciiWarningCheckbox.isSelected())){
-                bufferConfigFile.set(19,"-ignoreEmptyAsciiArtWarning");
-                
 
-            } else {
-                bufferConfigFile.set(19,"ignoreEmptyAsciiArtWarning");
-            }
-        }
+
+       if (e.getSource() == StartingCommandSubmitButton){
+        bufferConfigFile.set(19, StartingCommandTextField.getText());
+       }
 
         if (e.getSource() == TxtEditSubmitButton){
             bufferConfigFile.set(20, TxtEditTextField.getText());
