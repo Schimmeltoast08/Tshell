@@ -10,7 +10,7 @@ public class Config {
     """;
     String preferedConfigEditor = "vim";
     String shellStarterAdditionalString = "";
-    boolean doReloadAfterConfigEdit = false;
+    String doReloadAfterConfigEdit = "";
     String promptFGColour = "White";
     String promptBGColour = "";
     String guiDarkMode = "";

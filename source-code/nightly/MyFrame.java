@@ -10,10 +10,13 @@ import javax.swing.JCheckBox;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.Color;
+import java.io.BufferedReader;
+import java.io.FileReader;
 
 import java.util.ArrayList;
 
 import java.io.FileWriter;
+import java.io.IOException;
 
 
 
@@ -382,8 +385,22 @@ public class MyFrame extends JFrame implements ActionListener{
 
 
 
-
 ///////////////////////////////////
+    String filepath = System.getProperty("user.home") + "/.config/tshell/config.tscfg";
+    try (BufferedReader reader = new BufferedReader(new FileReader(filepath));) {
+
+        
+        ArrayList<String> configFile1 = new ArrayList<>();
+        String line;
+
+        while ((line = reader.readLine()) != null) {                // this is redundant and I hate my life, but when I try to add the ascii logo to the regular config, it throws
+                    configFile1.add(line);                          // a NP Exception and when I just pass "" for those, it overrides the logo in the config
+        }
+
+    for (int i = 4; i <= 18; i++ ){
+        bufferConfigFile.set(i, configFile1.get(i));
+    }
+    } catch (IOException e){;}
     }
 
     @Override

@@ -124,7 +124,7 @@ public class tshell {
                         break;
                     }
                 }
-                if (config.doReloadAfterConfigEdit){
+                if (config.doReloadAfterConfigEdit.equalsIgnoreCase("doReloadAfterConfigEdit")){
                     config = loadConfig();
                     printColour("reloading shell", "Green");
                     break;
@@ -144,7 +144,7 @@ public class tshell {
                 if (prompt.startsWith("tshell -cfg")){
                     try {
                         executeCommand(config.preferedConfigEditor + " " +  System.getProperty("user.home") + "/.config/tshell/config.tscfg");
-                        if (config.doReloadAfterConfigEdit){
+                        if (config.doReloadAfterConfigEdit.equalsIgnoreCase("doReloadAfterConfigEdit")){
                             printColour("Auto reloading shell after config edit", "Green");
                             break;
                         }
@@ -587,10 +587,9 @@ static Config loadConfig() {
         config.promptBGColour = configFile.get(3);
         config.startUpCommand = configFile.get(19);
         config.preferedConfigEditor = configFile.get(20);
+        config.doReloadAfterConfigEdit = configFile.get(21);
+        config.guiDarkMode = configFile.get(22);
 
-        if (configFile.get(21).equalsIgnoreCase("doReloadAfterConfigEdit")) {
-            config.doReloadAfterConfigEdit = true;
-        }
 
         
 
@@ -670,7 +669,7 @@ static ArrayList<String> ConfigObjectToArrayList(Config config){
     }
     ret.add(config.startUpCommand);
     ret.add(config.preferedConfigEditor);
-    ret.add(Boolean.toString(config.doReloadAfterConfigEdit));
+    ret.add(config.doReloadAfterConfigEdit);
     ret.add(config.guiDarkMode);
 
     return ret;
