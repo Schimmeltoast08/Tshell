@@ -461,9 +461,13 @@ public class MyFrame extends JFrame implements ActionListener{
         if (e.getSource() == SettingsSubmitButton){
             try(FileWriter writer = new FileWriter(System.getProperty("user.home") + "/.config/tshell/config.tscfg")){
                 String cfg = "";
+                StringBuilder sb = new StringBuilder();
                 for(String str : bufferConfigFile){
-                    cfg += str + "\n";
+                    //cfg += str + "\n";
+                    sb.append(str);
+                    sb.append("\n");
                 }
+                cfg = sb.toString();
                 //IO.println("Settings saved Successfully");
                 JOptionPane.showMessageDialog(null, "Settings saved successfully");
                 writer.write(cfg);
