@@ -99,21 +99,24 @@ public class tshell {
                 }
                 
             }
-/*
+
             if (prompt.startsWith("tshell --update-linux")){
                 isValid = true;
                 doTry = false;
                 doPrintSlogan = false;
+                try{
                 executeCommand("sudo rm  -rf /opt/tshell");
                 executeCommand("sudo rm /usr/bin/tshell");
-                executeCommand("sudo rm -rf /tmp/tshell-tmp");
+                //executeCommand("sudo rm -rf /tmp/tshell-tmp");
+                
                 //executeCommand("mkdir /tmp/tshell-update-folder-" + versionNumber);
                 executeCommand("git clone https://github.com/Schimmeltoast08/Tshell.git /tmp/tshell-tmp");
-                executeCommand("sudo mv /tmp/tshell-tmp /tmp/tshell-update-folder-" + versionNumber);
-                executeCommand("sudo /tmp/tshell-update-folder-" + versionNumber +"/linux-binary/install.sh");
+                //executeCommand("sudo mv /tmp/tshell-tmp /tmp/tshell-update-folder-" + versionNumber);
+                executeCommand("sudo /tmp/tshell-tmp/linux-binary/install.sh");
+                IO.println("This is still experimental. If it does not work, run 'sduo /tmp/tshell-tmp/linux-binary/install.sh");
 
                 IO.println("test");
-            }*/ //tODO: fix
+            } catch (Exception e){} }
 
             if (prompt.startsWith("emptyHistory")){
                 emptyHistory();
