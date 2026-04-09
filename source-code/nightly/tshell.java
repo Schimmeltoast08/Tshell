@@ -136,8 +136,9 @@ public class tshell {
                 } catch (Exception e){
                     JOptionPane.showMessageDialog(null, "Could not open settings window. If you are on wayland, is XWayland running? ");
                     // still throws java error instead of my error. Immidiately terminates for some reason even tho it's in try block
+                    // edit 09.04.2026: during testing, I encountered a sitation where this message popped up, so sometimes it works
                 }
-                while (true){
+                while (true){ // halt shell until gui closes
                     if(myframe.doExit){
                         myframe.dispose();
                         break;
@@ -153,6 +154,9 @@ public class tshell {
             if (prompt.startsWith("tshell --reload")){
                 printColour("reoloading shell", "Green");
                 config = loadConfig();
+                        loadHistory();
+                        loadAliases();
+                        initConfigIfNotExists();
                 break;
             }
 
@@ -178,7 +182,7 @@ public class tshell {
 
 
             if (prompt.startsWith("tshell -l")){
-                printAscii(config.asciiArtString);
+                printAscii(config.asciiArtString, config);
                 doTry = false;
                 isValid = true;
                 doPrintSlogan = false;
@@ -209,6 +213,11 @@ public class tshell {
                 clearScreen();
                 doTry = false;
                 isValid = true;
+            }
+
+            if (prompt.startsWith("alias")){
+                String alias = prompt.substring(6);
+                addAlias(alias + "\n");
             }
 
 
@@ -253,7 +262,7 @@ public class tshell {
         try{
             boolean shellBuiltIn = false;
             String prompt = input.substring(5);
-            String[] builtInCommands = {"type", "echo", "exit", "pwd", "cls", "history", "emptyHistory", "tshell"}; 
+            String[] builtInCommands = {"type", "echo", "exit", "pwd", "cls", "history", "emptyHistory", "tshell", "alias"}; 
             for (String str : builtInCommands){
                 if (str.contains(prompt)){
                     IO.println(prompt + " is a shell builtin");
@@ -392,33 +401,15 @@ public static void changeCurrentWorkingDirectory(String input){
 }
 
 
-static void printAscii(String asciiConfig){
-    String defaultLogo = """
+static void printAscii(String asciiConfig, Config config){
 
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡴⠛⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠓⢦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠹⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⡀⠀⠀⠀⠘⠿⠟⠀⢀⡀⠀⢀⡀⠀⠻⠿⠇⠀⠀⠀⠀⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢿⣿⣦⠀⠀⠀⠀⠀⠀⠀⠛⠶⠾⠃⠀⠀⠀⠀⠀⠀⠀⣴⣿⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡅⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣷⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣾⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-                
-                """;
     
 
 
         if (!(asciiConfig.isEmpty())){
             IO.println(asciiConfig);
         } else{
-            IO.println(defaultLogo);
+            IO.println(config.defaultLogo);
         }
 
     }
@@ -696,6 +687,14 @@ static ArrayList<String> ConfigObjectToArrayList(Config config){
 
     
 }
+static void addAlias(String alias){
+    try (FileWriter writer = new FileWriter(System.getProperty("user.home") + "/.config/tshell/aliases.tscfg", true)){
+        writer.write(alias);
 
+    } catch (IOException e){
+
+    }
 }
 
+
+}
