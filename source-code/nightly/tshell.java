@@ -28,6 +28,7 @@ public class tshell {
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
         Boolean doExit = false;
+        String versionNumber = "3.1.0"; 
 
         Config config = loadConfig();
         loadHistory();
@@ -87,7 +88,7 @@ public class tshell {
                 isValid = true;
                 doTry = false;
                 doPrintSlogan = false;
-                IO.println("Tshell version 3.0.0");
+                IO.println("Tshell version " + versionNumber);
                 
             }
 
@@ -98,6 +99,21 @@ public class tshell {
                 }
                 
             }
+/*
+            if (prompt.startsWith("tshell --update-linux")){
+                isValid = true;
+                doTry = false;
+                doPrintSlogan = false;
+                executeCommand("sudo rm  -rf /opt/tshell");
+                executeCommand("sudo rm /usr/bin/tshell");
+                executeCommand("sudo rm -rf /tmp/tshell-tmp");
+                //executeCommand("mkdir /tmp/tshell-update-folder-" + versionNumber);
+                executeCommand("git clone https://github.com/Schimmeltoast08/Tshell.git /tmp/tshell-tmp");
+                executeCommand("sudo mv /tmp/tshell-tmp /tmp/tshell-update-folder-" + versionNumber);
+                executeCommand("sudo /tmp/tshell-update-folder-" + versionNumber +"/linux-binary/install.sh");
+
+                IO.println("test");
+            }*/ //tODO: fix
 
             if (prompt.startsWith("emptyHistory")){
                 emptyHistory();
