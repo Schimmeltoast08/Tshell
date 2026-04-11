@@ -22,6 +22,7 @@ public class tshell {
     static ArrayList<String> aliases = new ArrayList<>();
     static ArrayList<String> LeftAlias = new ArrayList<>();
     static ArrayList<String> RightAlias = new ArrayList<>();
+    static ArrayList<String> configFile = new ArrayList<>();
     //static ArrayList<String> configFile = new ArrayList<>();
     static final int MAX_HISTORY_SIZE = 1000; // i hate the name but it's the naming convention :/
 
@@ -45,7 +46,7 @@ public class tshell {
             executeCommand(config.startUpCommand);
         }
 
-        while (true){
+        while (true){ // repl loop
             boolean isValid = false;
             renderPrompt(config);
             
@@ -132,7 +133,7 @@ public class tshell {
                     doDarkMode = false;
                 }
                 try{
-                myframe = new MyFrame(doDarkMode, ConfigObjectToArrayList(config));
+                myframe = new MyFrame(doDarkMode, ConfigObjectToArrayList(config, configFile));
                 } catch (Exception e){
                     JOptionPane.showMessageDialog(null, "Could not open settings window. If you are on wayland, is XWayland running? ");
                     // still throws java error instead of my error. Immidiately terminates for some reason even tho it's in try block
@@ -154,9 +155,9 @@ public class tshell {
             if (prompt.startsWith("tshell --reload")){
                 printColour("reoloading shell", "Green");
                 config = loadConfig();
-                        loadHistory();
-                        loadAliases();
-                        initConfigIfNotExists();
+                         loadHistory();
+                         loadAliases();
+                         initConfigIfNotExists();
                 break;
             }
 
@@ -403,9 +404,6 @@ public static void changeCurrentWorkingDirectory(String input){
 
 static void printAscii(String asciiConfig, Config config){
 
-    
-
-
         if (!(asciiConfig.isEmpty())){
             IO.println(asciiConfig);
         } else{
@@ -581,9 +579,10 @@ static Config loadConfig() {
 
     String filepath = System.getProperty("user.home") + "/.config/tshell/config.tscfg";
     try (BufferedReader reader = new BufferedReader(new FileReader(filepath));) {
+        configFile.clear();
 
         
-        ArrayList<String> configFile = new ArrayList<>();
+
         String line;
 
         while ((line = reader.readLine()) != null) {
@@ -591,7 +590,7 @@ static Config loadConfig() {
         }
 
 
-        config.shellStarterString = configFile.get(0);
+        config.shellStarterString = configFile.get(0); // no .trim() in case they want smt like "Toast % Hi >"
         config.shellStarterAdditionalString = configFile.get(1).trim();
         config.promptFGColour = configFile.get(2);
         config.promptBGColour = configFile.get(3);
@@ -666,15 +665,15 @@ static void initConfigIfNotExists(){
     }
 }
 
-static ArrayList<String> ConfigObjectToArrayList(Config config){
+static ArrayList<String> ConfigObjectToArrayList(Config config, ArrayList<String> configFile){
     ArrayList<String> ret = new ArrayList<>();
     
     ret.add(config.shellStarterString);
     ret.add(config.shellStarterAdditionalString);
     ret.add(config.promptFGColour);
     ret.add(config.promptBGColour);
-    for (int i = 5; i < 20; i++){ // weird cuz easier for config
-    ret.add(""); // myFrame doesn't care abt ascii
+    for (int i = 4; i < 19; i++){ // weird cuz easier for config
+    ret.add(configFile.get(i));
 
     }
     ret.add(config.startUpCommand);

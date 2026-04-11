@@ -386,21 +386,6 @@ public class MyFrame extends JFrame implements ActionListener{
 
 
 ///////////////////////////////////
-    String filepath = System.getProperty("user.home") + "/.config/tshell/config.tscfg";
-    try (BufferedReader reader = new BufferedReader(new FileReader(filepath));) {
-
-        
-        ArrayList<String> configFile1 = new ArrayList<>();
-        String line;
-
-        while ((line = reader.readLine()) != null) {                // this is redundant and I hate my life, but when I try to add the ascii logo to the regular config, it throws
-                    configFile1.add(line);                          // a NP Exception and when I just pass "" for those, it overrides the logo in the config
-        }
-
-    for (int i = 4; i <= 18; i++ ){
-        bufferConfigFile.set(i, configFile1.get(i));
-    }
-    } catch (IOException e){;}
     }
 
     @Override
@@ -469,9 +454,10 @@ public class MyFrame extends JFrame implements ActionListener{
                 }
                 cfg = sb.toString();
                 //IO.println("Settings saved Successfully");
-                JOptionPane.showMessageDialog(null, "Settings saved successfully");
+                
                 writer.write(cfg);
-                writer.close();
+                //writer.close();
+                JOptionPane.showMessageDialog(null, "Settings saved successfully");
 
 
                 
