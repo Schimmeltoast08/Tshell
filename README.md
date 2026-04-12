@@ -1,5 +1,5 @@
 # Tshell
-A customizeable shell written in Java.
+A customizeable shell with graphical settings written in Java.
 
 # Installation
 
