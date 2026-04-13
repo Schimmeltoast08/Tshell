@@ -22,12 +22,14 @@ public class tshell {
     static ArrayList<String> aliases = new ArrayList<>();
     static ArrayList<String> LeftAlias = new ArrayList<>();
     static ArrayList<String> RightAlias = new ArrayList<>();
+    static ArrayList<String> configFile = new ArrayList<>();
     //static ArrayList<String> configFile = new ArrayList<>();
     static final int MAX_HISTORY_SIZE = 1000; // i hate the name but it's the naming convention :/
 
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
         Boolean doExit = false;
+        String versionNumber = "3.1.1"; 
 
         Config config = loadConfig();
         loadHistory();
@@ -44,7 +46,7 @@ public class tshell {
             executeCommand(config.startUpCommand);
         }
 
-        while (true){
+        while (true){ // repl loop
             boolean isValid = false;
             renderPrompt(config);
             
@@ -87,7 +89,7 @@ public class tshell {
                 isValid = true;
                 doTry = false;
                 doPrintSlogan = false;
-                IO.println("Tshell version 3.0.0");
+                IO.println("Tshell version " + versionNumber);
                 
             }
 
@@ -98,6 +100,24 @@ public class tshell {
                 }
                 
             }
+
+            if (prompt.startsWith("tshell --update-linux")){
+                isValid = true;
+                doTry = false;
+                doPrintSlogan = false;
+                try{
+                executeCommand("sudo rm  -rf /opt/tshell");
+                executeCommand("sudo rm /usr/bin/tshell");
+                //executeCommand("sudo rm -rf /tmp/tshell-tmp");
+                
+                //executeCommand("mkdir /tmp/tshell-update-folder-" + versionNumber);
+                executeCommand("git clone https://github.com/Schimmeltoast08/Tshell.git /tmp/tshell-tmp");
+                //executeCommand("sudo mv /tmp/tshell-tmp /tmp/tshell-update-folder-" + versionNumber);
+                executeCommand("sudo /tmp/tshell-tmp/linux-binary/install.sh");
+                IO.println("This is still experimental. If it does not work, run 'sduo /tmp/tshell-tmp/linux-binary/install.sh");
+
+                IO.println("test");
+            } catch (Exception e){} }
 
             if (prompt.startsWith("emptyHistory")){
                 emptyHistory();
@@ -113,18 +133,19 @@ public class tshell {
                     doDarkMode = false;
                 }
                 try{
-                myframe = new MyFrame(doDarkMode, ConfigObjectToArrayList(config));
+                myframe = new MyFrame(doDarkMode, ConfigObjectToArrayList(config, configFile));
                 } catch (Exception e){
                     JOptionPane.showMessageDialog(null, "Could not open settings window. If you are on wayland, is XWayland running? ");
                     // still throws java error instead of my error. Immidiately terminates for some reason even tho it's in try block
+                    // edit 09.04.2026: during testing, I encountered a sitation where this message popped up, so sometimes it works
                 }
-                while (true){
+                while (true){ // halt shell until gui closes
                     if(myframe.doExit){
                         myframe.dispose();
                         break;
                     }
                 }
-                if (config.doReloadAfterConfigEdit){
+                if (config.doReloadAfterConfigEdit.equalsIgnoreCase("doReloadAfterConfigEdit")){
                     config = loadConfig();
                     printColour("reloading shell", "Green");
                     break;
@@ -134,6 +155,9 @@ public class tshell {
             if (prompt.startsWith("tshell --reload")){
                 printColour("reoloading shell", "Green");
                 config = loadConfig();
+                         loadHistory();
+                         loadAliases();
+                         initConfigIfNotExists();
                 break;
             }
 
@@ -144,7 +168,7 @@ public class tshell {
                 if (prompt.startsWith("tshell -cfg")){
                     try {
                         executeCommand(config.preferedConfigEditor + " " +  System.getProperty("user.home") + "/.config/tshell/config.tscfg");
-                        if (config.doReloadAfterConfigEdit){
+                        if (config.doReloadAfterConfigEdit.equalsIgnoreCase("doReloadAfterConfigEdit")){
                             printColour("Auto reloading shell after config edit", "Green");
                             break;
                         }
@@ -159,7 +183,7 @@ public class tshell {
 
 
             if (prompt.startsWith("tshell -l")){
-                printAscii(config.asciiArtString);
+                printAscii(config.asciiArtString, config);
                 doTry = false;
                 isValid = true;
                 doPrintSlogan = false;
@@ -190,6 +214,11 @@ public class tshell {
                 clearScreen();
                 doTry = false;
                 isValid = true;
+            }
+
+            if (prompt.startsWith("alias")){
+                String alias = prompt.substring(6);
+                addAlias(alias + "\n");
             }
 
 
@@ -234,7 +263,7 @@ public class tshell {
         try{
             boolean shellBuiltIn = false;
             String prompt = input.substring(5);
-            String[] builtInCommands = {"type", "echo", "exit", "pwd", "cls", "history", "emptyHistory", "tshell"}; 
+            String[] builtInCommands = {"type", "echo", "exit", "pwd", "cls", "history", "emptyHistory", "tshell", "alias"}; 
             for (String str : builtInCommands){
                 if (str.contains(prompt)){
                     IO.println(prompt + " is a shell builtin");
@@ -373,33 +402,12 @@ public static void changeCurrentWorkingDirectory(String input){
 }
 
 
-static void printAscii(String asciiConfig){
-    String defaultLogo = """
-
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡴⠛⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠓⢦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠹⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⡀⠀⠀⠀⠘⠿⠟⠀⢀⡀⠀⢀⡀⠀⠻⠿⠇⠀⠀⠀⠀⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢿⣿⣦⠀⠀⠀⠀⠀⠀⠀⠛⠶⠾⠃⠀⠀⠀⠀⠀⠀⠀⣴⣿⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡅⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣷⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣾⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-                
-                """;
-    
-
+static void printAscii(String asciiConfig, Config config){
 
         if (!(asciiConfig.isEmpty())){
             IO.println(asciiConfig);
         } else{
-            IO.println(defaultLogo);
+            IO.println(config.defaultLogo);
         }
 
     }
@@ -571,9 +579,10 @@ static Config loadConfig() {
 
     String filepath = System.getProperty("user.home") + "/.config/tshell/config.tscfg";
     try (BufferedReader reader = new BufferedReader(new FileReader(filepath));) {
+        configFile.clear();
 
         
-        ArrayList<String> configFile = new ArrayList<>();
+
         String line;
 
         while ((line = reader.readLine()) != null) {
@@ -581,16 +590,15 @@ static Config loadConfig() {
         }
 
 
-        config.shellStarterString = configFile.get(0);
+        config.shellStarterString = configFile.get(0); // no .trim() in case they want smt like "Toast % Hi >"
         config.shellStarterAdditionalString = configFile.get(1).trim();
         config.promptFGColour = configFile.get(2);
         config.promptBGColour = configFile.get(3);
         config.startUpCommand = configFile.get(19);
         config.preferedConfigEditor = configFile.get(20);
+        config.doReloadAfterConfigEdit = configFile.get(21);
+        config.guiDarkMode = configFile.get(22);
 
-        if (configFile.get(21).equalsIgnoreCase("doReloadAfterConfigEdit")) {
-            config.doReloadAfterConfigEdit = true;
-        }
 
         
 
@@ -657,20 +665,20 @@ static void initConfigIfNotExists(){
     }
 }
 
-static ArrayList<String> ConfigObjectToArrayList(Config config){
+static ArrayList<String> ConfigObjectToArrayList(Config config, ArrayList<String> configFile){
     ArrayList<String> ret = new ArrayList<>();
     
     ret.add(config.shellStarterString);
     ret.add(config.shellStarterAdditionalString);
     ret.add(config.promptFGColour);
     ret.add(config.promptBGColour);
-    for (int i = 5; i < 20; i++){ // weird cuz easier for config
-    ret.add(""); // myFrame doesn't care abt ascii
+    for (int i = 4; i < 19; i++){ // weird cuz easier for config
+    ret.add(configFile.get(i));
 
     }
     ret.add(config.startUpCommand);
     ret.add(config.preferedConfigEditor);
-    ret.add(Boolean.toString(config.doReloadAfterConfigEdit));
+    ret.add(config.doReloadAfterConfigEdit);
     ret.add(config.guiDarkMode);
 
     return ret;
@@ -678,6 +686,14 @@ static ArrayList<String> ConfigObjectToArrayList(Config config){
 
     
 }
+static void addAlias(String alias){
+    try (FileWriter writer = new FileWriter(System.getProperty("user.home") + "/.config/tshell/aliases.tscfg", true)){
+        writer.write(alias);
 
+    } catch (IOException e){
+
+    }
 }
 
+
+}

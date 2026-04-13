@@ -29,7 +29,7 @@ public class tshell {
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
         Boolean doExit = false;
-        String versionNumber = "3.1.0"; 
+        String versionNumber = "3.1.1"; 
 
         Config config = loadConfig();
         loadHistory();
