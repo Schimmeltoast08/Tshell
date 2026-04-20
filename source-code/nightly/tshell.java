@@ -335,6 +335,11 @@ public class tshell {
 
 
  static boolean executeCommand(String prompt){
+            if (LeftAlias.contains(prompt)) {
+            int idx = LeftAlias.indexOf(prompt);
+            prompt = RightAlias.get(idx);
+                        
+                    }
 
         String pathSeparator = File.pathSeparator;
         String path = System.getenv("PATH");
@@ -354,6 +359,7 @@ public class tshell {
 prompt = shortPrompt.get(0);
         for (String currentPath : possiblePaths){
                 try {
+                    
                     currentPath += "/" + prompt;
                     File file = new File(currentPath);
                     if (file.exists()){
@@ -396,11 +402,7 @@ prompt = shortPrompt.get(0);
 
                     
         } 
-        if (LeftAlias.contains(prompt)) {
-            int idx = LeftAlias.indexOf(prompt);
-            executeCommand(RightAlias.get(idx));
-                        
-                    }
+
         return false;
 
     }
