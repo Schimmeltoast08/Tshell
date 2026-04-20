@@ -1,16 +1,13 @@
-import java.util.Scanner;
-import java.util.ArrayList;
-import java.util.List;
-
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.FileReader;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 import javax.swing.JOptionPane;
 
 
@@ -23,13 +20,14 @@ public class tshell {
     static ArrayList<String> LeftAlias = new ArrayList<>();
     static ArrayList<String> RightAlias = new ArrayList<>();
     static ArrayList<String> configFile = new ArrayList<>();
+    static String lastPrompt = "";
     //static ArrayList<String> configFile = new ArrayList<>();
     static final int MAX_HISTORY_SIZE = 1000; // i hate the name but it's the naming convention :/
 
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
         Boolean doExit = false;
-        String versionNumber = "3.1.1"; 
+        String versionNumber = "3.2.1"; 
 
         Config config = loadConfig();
         loadHistory();
@@ -99,6 +97,13 @@ public class tshell {
 
                 }
                 
+            }
+
+            if (prompt.startsWith("!!")){
+                isValid = true;
+                doTry = false;
+                executeCommand(lastPrompt + prompt.substring(2));
+                // does not work with sudo !! for safety reasons
             }
 
             if (prompt.startsWith("tshell --update-linux")){
@@ -234,6 +239,7 @@ public class tshell {
            }
            doTry = true;
            doPrintSlogan = true;
+           lastPrompt = prompt;
 
            try(FileWriter historyWriter = new FileWriter(System.getProperty("user.home") + "/.tshHistory", true)){
 
