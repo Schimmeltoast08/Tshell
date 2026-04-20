@@ -1,16 +1,16 @@
-import java.util.Scanner;
-import java.util.ArrayList;
-import java.util.List;
-
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.FileReader;
-
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 import javax.swing.JOptionPane;
 
 
@@ -23,13 +23,14 @@ public class tshell {
     static ArrayList<String> LeftAlias = new ArrayList<>();
     static ArrayList<String> RightAlias = new ArrayList<>();
     static ArrayList<String> configFile = new ArrayList<>();
+    static String lastPrompt = "";
     //static ArrayList<String> configFile = new ArrayList<>();
     static final int MAX_HISTORY_SIZE = 1000; // i hate the name but it's the naming convention :/
 
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
         Boolean doExit = false;
-        String versionNumber = "3.1.1"; 
+        String versionNumber = "3.2.1"; 
 
         Config config = loadConfig();
         loadHistory();
@@ -100,6 +101,26 @@ public class tshell {
                 }
                 
             }
+
+            if (prompt.startsWith("!!")){
+                isValid = true;
+                doTry = false;
+                executeCommand(lastPrompt + prompt.substring(2));
+                // does not work with sudo !! for safety reasons
+            }
+
+            if (prompt.startsWith("sudo !!")){
+                isValid = true;
+                doTry = false;
+                executeCommand("sudo " + lastPrompt);
+            }
+
+            if (prompt.contains("|")) {
+                doTry = false;
+                isValid = true;
+                runPipeline(prompt);
+            }
+
 
             if (prompt.startsWith("tshell --update-linux")){
                 isValid = true;
@@ -223,6 +244,17 @@ public class tshell {
 
 
 
+            if (prompt.contains("&&")){
+                isValid = true;
+                doTry = false;
+                String[] cmds = prompt.split("&&");
+                for (String cmd : cmds){
+                    cmd = cmd.trim();
+                    executeCommand(cmd);
+                }
+            }
+
+
 
            if (doTry){
            if (!prompt.isEmpty() && (executeCommand(prompt)) == false && isValid == false){
@@ -234,6 +266,7 @@ public class tshell {
            }
            doTry = true;
            doPrintSlogan = true;
+           lastPrompt = prompt;
 
            try(FileWriter historyWriter = new FileWriter(System.getProperty("user.home") + "/.tshHistory", true)){
 
@@ -244,7 +277,7 @@ public class tshell {
            } catch (IOException e) {
             IO.println("Could not write to history. Hit E for error code");
 
-                // ignore warning, it does its job and @
+                // ignore warning, it does its job and @Override does not work
              new errorTimerThread(); 
             if (scanner.nextLine().toLowerCase().equals("e")){
                 IO.println(e);
@@ -305,21 +338,31 @@ public class tshell {
 
 
  static boolean executeCommand(String prompt){
+            if (LeftAlias.contains(prompt)) {
+            int idx = LeftAlias.indexOf(prompt);
+            prompt = RightAlias.get(idx);
+                        
+                    }
 
         String pathSeparator = File.pathSeparator;
         String path = System.getenv("PATH");
         String[] possiblePaths = path.split(pathSeparator);
-        String[] shortPrompt = prompt.split(" ");
         ArrayList<String> argStr = new ArrayList<>();
+       List<String> shortPrompt = parseCommand(prompt);
 
-        for (int i = 1; i < shortPrompt.length; i++){
-            argStr.add(shortPrompt[i]);
+
+        if (shortPrompt.isEmpty()) {
+            return false; // so no crash on empty input
         }
 
+        for (int i = 1; i < shortPrompt.size(); i++) {
+            argStr.add(shortPrompt.get(i));
+        }
 
-        prompt = shortPrompt[0];
+prompt = shortPrompt.get(0);
         for (String currentPath : possiblePaths){
                 try {
+                    
                     currentPath += "/" + prompt;
                     File file = new File(currentPath);
                     if (file.exists()){
@@ -328,9 +371,11 @@ public class tshell {
                             commandAndArgs.add(prompt);
                             commandAndArgs.addAll(argStr);
                             ProcessBuilder pb = new ProcessBuilder(commandAndArgs);
+                            //ProcessBuilder pb2 = new ProcessBuilder()
                             pb.directory(new File(currentDirectory));
                             pb.inheritIO();
                             Process process = pb.start();
+
                             
                             @SuppressWarnings("unused")
                             int exitCode = process.waitFor(); // so it waits for finish + if i delete it a random error appears. Idk why
@@ -349,11 +394,7 @@ public class tshell {
 
                     
         } 
-        if (LeftAlias.contains(prompt)) {
-            int idx = LeftAlias.indexOf(prompt);
-            executeCommand(RightAlias.get(idx));
-                        
-                    }
+
         return false;
 
     }
@@ -693,6 +734,98 @@ static void addAlias(String alias){
     } catch (IOException e){
 
     }
+}
+static void runPipeline(String prompt) {
+    try {
+        String[] commands = prompt.split("\\|");
+
+        List<Process> processes = new ArrayList<>();
+        List<List<String>> parsedCommands = new ArrayList<>();
+
+        // parse commands
+        for (String cmd : commands) {
+            parsedCommands.add(parseCommand(cmd.trim()));
+        }
+
+        // start processes
+        for (List<String> cmd : parsedCommands) {
+            ProcessBuilder pb = new ProcessBuilder(cmd);
+            pb.directory(new File(currentDirectory));
+            processes.add(pb.start());
+        }
+
+        // pipe them
+        for (int i = 0; i < processes.size() - 1; i++) {
+            Process current = processes.get(i);
+            Process next = processes.get(i + 1);
+
+            InputStream in = current.getInputStream();
+            OutputStream out = next.getOutputStream();
+
+            new Thread(() -> {
+                try (in; out) {
+                    in.transferTo(out);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+        }
+
+        // print final output
+        Process last = processes.get(processes.size() - 1);
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(last.getInputStream()))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+        }
+
+        // wait for all
+        for (Process p : processes) {
+            p.waitFor();
+        }
+
+    } catch (Exception e) {
+        IO.println("Pipeline error: " + e);
+    }
+}
+static List<String> parseCommand(String input) { // tokanizer so " and ' work inside commands
+    List<String> tokens = new ArrayList<>();
+    StringBuilder current = new StringBuilder();
+    boolean inDoubleQuotes = false;
+    boolean inSingleQuotes = false;
+
+    for (int i = 0; i < input.length(); i++) {
+        char c = input.charAt(i);
+
+        if (c == '"' && !inSingleQuotes) {
+            inDoubleQuotes = !inDoubleQuotes;
+            continue; // don't include the quote
+        }
+
+        if (c == '\'' && !inDoubleQuotes) {
+            inSingleQuotes = !inSingleQuotes;
+            continue; // don't include the quote
+        }
+
+        if (c == ' ' && !inDoubleQuotes && !inSingleQuotes) {
+            if (current.length() > 0) {
+                tokens.add(current.toString());
+                current.setLength(0);
+            }
+        } else {
+            current.append(c);
+        }
+    }
+
+    if (current.length() > 0) {
+        tokens.add(current.toString());
+    }
+
+    return tokens;
 }
 
 

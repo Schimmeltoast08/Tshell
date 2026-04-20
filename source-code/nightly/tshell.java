@@ -109,13 +109,16 @@ public class tshell {
                 // does not work with sudo !! for safety reasons
             }
 
+            if (prompt.startsWith("sudo !!")){
+                isValid = true;
+                doTry = false;
+                executeCommand("sudo " + lastPrompt);
+            }
+
             if (prompt.contains("|")) {
                 doTry = false;
                 isValid = true;
                 runPipeline(prompt);
-                /*if (prompt.contains("\"") || prompt.contains("\'")){
-                    IO.println("Sorry, \" and \' is not implemented yet :(");
-                }*/
             }
 
 
