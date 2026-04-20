@@ -3,6 +3,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -105,6 +108,16 @@ public class tshell {
                 executeCommand(lastPrompt + prompt.substring(2));
                 // does not work with sudo !! for safety reasons
             }
+
+            if (prompt.contains("|")) {
+                doTry = false;
+                isValid = true;
+                runPipeline(prompt);
+                if (prompt.contains("\"") || prompt.contains("\'")){
+                    IO.println("Sorry, \" and \' is not implemented yet :(");
+                }
+            }
+
 
             if (prompt.startsWith("tshell --update-linux")){
                 isValid = true;
@@ -345,9 +358,22 @@ public class tshell {
                             commandAndArgs.add(prompt);
                             commandAndArgs.addAll(argStr);
                             ProcessBuilder pb = new ProcessBuilder(commandAndArgs);
+                            //ProcessBuilder pb2 = new ProcessBuilder()
                             pb.directory(new File(currentDirectory));
                             pb.inheritIO();
                             Process process = pb.start();
+
+
+/*
+                            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                            StringBuilder builder = new StringBuilder();
+                            String line = "";
+                            while ( (line = reader.readLine()) != null) {
+                                builder.append(line);
+                                builder.append(System.getProperty("line.separator"));
+                            }
+                            cmdOutput = builder.toString();
+*/
                             
                             @SuppressWarnings("unused")
                             int exitCode = process.waitFor(); // so it waits for finish + if i delete it a random error appears. Idk why
@@ -709,6 +735,64 @@ static void addAlias(String alias){
 
     } catch (IOException e){
 
+    }
+}
+static void runPipeline(String prompt) {
+    try {
+        String[] commands = prompt.split("\\|");
+
+        List<Process> processes = new ArrayList<>();
+        List<List<String>> parsedCommands = new ArrayList<>();
+
+        // parse commands
+        for (String cmd : commands) {
+            String[] parts = cmd.trim().split(" ");
+            parsedCommands.add(new ArrayList<>(List.of(parts)));
+        }
+
+        // start processes
+        for (List<String> cmd : parsedCommands) {
+            ProcessBuilder pb = new ProcessBuilder(cmd);
+            pb.directory(new File(currentDirectory));
+            processes.add(pb.start());
+        }
+
+        // pipe them
+        for (int i = 0; i < processes.size() - 1; i++) {
+            Process current = processes.get(i);
+            Process next = processes.get(i + 1);
+
+            InputStream in = current.getInputStream();
+            OutputStream out = next.getOutputStream();
+
+            new Thread(() -> {
+                try (in; out) {
+                    in.transferTo(out);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+        }
+
+        // print final output
+        Process last = processes.get(processes.size() - 1);
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(last.getInputStream()))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+        }
+
+        // wait for all
+        for (Process p : processes) {
+            p.waitFor();
+        }
+
+    } catch (Exception e) {
+        IO.println("Pipeline error: " + e);
     }
 }
 
