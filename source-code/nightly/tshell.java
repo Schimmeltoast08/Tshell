@@ -228,6 +228,17 @@ public class tshell {
 
 
 
+            if (prompt.contains("&&")){
+                isValid = true;
+                doTry = false;
+                String[] cmds = prompt.split("&&");
+                for (String cmd : cmds){
+                    cmd = cmd.trim();
+                    executeCommand(cmd);
+                }
+            }
+
+
 
            if (doTry){
            if (!prompt.isEmpty() && (executeCommand(prompt)) == false && isValid == false){
