@@ -13,7 +13,10 @@ import java.util.List;
 import java.util.Scanner;
 import javax.swing.JOptionPane;
 
-
+/*
+* @author Toasti
+* Copyright: GPL v.3
+*/
 
 
 public class tshell {
@@ -24,7 +27,6 @@ public class tshell {
     static ArrayList<String> RightAlias = new ArrayList<>();
     static ArrayList<String> configFile = new ArrayList<>();
     static String lastPrompt = "";
-    //static ArrayList<String> configFile = new ArrayList<>();
     static final int MAX_HISTORY_SIZE = 1000; // i hate the name but it's the naming convention :/
 
     public static void main(String[] args) throws Exception {
@@ -106,13 +108,12 @@ public class tshell {
                 isValid = true;
                 doTry = false;
                 executeCommand(lastPrompt + prompt.substring(2));
-                // does not work with sudo !! for safety reasons
             }
 
             if (prompt.startsWith("sudo !!")){
                 isValid = true;
                 doTry = false;
-                executeCommand("sudo " + lastPrompt);
+                executeCommand("sudo " + lastPrompt); // immidiate execute!!! Dangerous, but sudo is always dangerous
             }
 
             if (prompt.contains("|")) {
@@ -121,24 +122,6 @@ public class tshell {
                 runPipeline(prompt);
             }
 
-
-            if (prompt.startsWith("tshell --update-linux")){
-                isValid = true;
-                doTry = false;
-                doPrintSlogan = false;
-                try{
-                executeCommand("sudo rm  -rf /opt/tshell");
-                executeCommand("sudo rm /usr/bin/tshell");
-                //executeCommand("sudo rm -rf /tmp/tshell-tmp");
-                
-                //executeCommand("mkdir /tmp/tshell-update-folder-" + versionNumber);
-                executeCommand("git clone https://github.com/Schimmeltoast08/Tshell.git /tmp/tshell-tmp");
-                //executeCommand("sudo mv /tmp/tshell-tmp /tmp/tshell-update-folder-" + versionNumber);
-                executeCommand("sudo /tmp/tshell-tmp/linux-binary/install.sh");
-                IO.println("This is still experimental. If it does not work, run 'sduo /tmp/tshell-tmp/linux-binary/install.sh");
-
-                IO.println("test");
-            } catch (Exception e){} }
 
             if (prompt.startsWith("emptyHistory")){
                 emptyHistory();
@@ -277,7 +260,7 @@ public class tshell {
            } catch (IOException e) {
             IO.println("Could not write to history. Hit E for error code");
 
-                // ignore warning, it does its job and @Override does not work
+                // ignore warning, it does its job and @SuppressWarning does not work
              new errorTimerThread(); 
             if (scanner.nextLine().toLowerCase().equals("e")){
                 IO.println(e);
@@ -371,7 +354,6 @@ prompt = shortPrompt.get(0);
                             commandAndArgs.add(prompt);
                             commandAndArgs.addAll(argStr);
                             ProcessBuilder pb = new ProcessBuilder(commandAndArgs);
-                            //ProcessBuilder pb2 = new ProcessBuilder()
                             pb.directory(new File(currentDirectory));
                             pb.inheritIO();
                             Process process = pb.start();
@@ -514,6 +496,9 @@ static void suggest(String input) {
     for (String cmd : getAllCommands()) {
         if (cmd.startsWith(input)) {
             System.out.println("  " + cmd);
+            if (cmd.isEmpty()){
+                IO.println(input + ": command not found");
+            }
         } 
     
     }
@@ -523,7 +508,7 @@ static List<String> getAllCommands() {
     List<String> cmds = new ArrayList<>();
 
     // builtins
-    cmds.addAll(List.of("cd", "pwd", "exit", "echo", "clear", "help", "tshell"));
+    cmds.addAll(List.of("type", "echo", "exit", "pwd", "cls", "history", "emptyHistory", "tshell", "alias"));
 
     // PATH executables
     String path = System.getenv("PATH");
