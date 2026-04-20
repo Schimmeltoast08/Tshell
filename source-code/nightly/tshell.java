@@ -113,9 +113,9 @@ public class tshell {
                 doTry = false;
                 isValid = true;
                 runPipeline(prompt);
-                if (prompt.contains("\"") || prompt.contains("\'")){
+                /*if (prompt.contains("\"") || prompt.contains("\'")){
                     IO.println("Sorry, \" and \' is not implemented yet :(");
-                }
+                }*/
             }
 
 
@@ -339,15 +339,19 @@ public class tshell {
         String pathSeparator = File.pathSeparator;
         String path = System.getenv("PATH");
         String[] possiblePaths = path.split(pathSeparator);
-        String[] shortPrompt = prompt.split(" ");
         ArrayList<String> argStr = new ArrayList<>();
+       List<String> shortPrompt = parseCommand(prompt);
 
-        for (int i = 1; i < shortPrompt.length; i++){
-            argStr.add(shortPrompt[i]);
+
+        if (shortPrompt.isEmpty()) {
+            return false; // so no crash on empty input
         }
 
+        for (int i = 1; i < shortPrompt.size(); i++) {
+            argStr.add(shortPrompt.get(i));
+        }
 
-        prompt = shortPrompt[0];
+prompt = shortPrompt.get(0);
         for (String currentPath : possiblePaths){
                 try {
                     currentPath += "/" + prompt;
@@ -746,8 +750,7 @@ static void runPipeline(String prompt) {
 
         // parse commands
         for (String cmd : commands) {
-            String[] parts = cmd.trim().split(" ");
-            parsedCommands.add(new ArrayList<>(List.of(parts)));
+            parsedCommands.add(parseCommand(cmd.trim()));
         }
 
         // start processes
@@ -794,6 +797,42 @@ static void runPipeline(String prompt) {
     } catch (Exception e) {
         IO.println("Pipeline error: " + e);
     }
+}
+static List<String> parseCommand(String input) { // tokanizer so " and ' work inside commands
+    List<String> tokens = new ArrayList<>();
+    StringBuilder current = new StringBuilder();
+
+    boolean inDoubleQuotes = false;
+    boolean inSingleQuotes = false;
+
+    for (int i = 0; i < input.length(); i++) {
+        char c = input.charAt(i);
+
+        if (c == '"' && !inSingleQuotes) {
+            inDoubleQuotes = !inDoubleQuotes;
+            continue; // don't include the quote
+        }
+
+        if (c == '\'' && !inDoubleQuotes) {
+            inSingleQuotes = !inSingleQuotes;
+            continue; // don't include the quote
+        }
+
+        if (c == ' ' && !inDoubleQuotes && !inSingleQuotes) {
+            if (current.length() > 0) {
+                tokens.add(current.toString());
+                current.setLength(0);
+            }
+        } else {
+            current.append(c);
+        }
+    }
+
+    if (current.length() > 0) {
+        tokens.add(current.toString());
+    }
+
+    return tokens;
 }
 
 
