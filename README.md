@@ -64,7 +64,7 @@ Syntax:
 ```
 command=command2
 ```
-each new statement must be on a new line. In this example, if you type command it will execute command2 **unless command exists**. This ensures you will not softlock yourself or interfier with other programms.
+each new statement must be on a new line. In this example, if you type command it will execute command2 **unless command exists**. This ensures you will not softlock yourself or interfere with other programms.
 
 ### Secret functions
 1. if you set the second line to "user@host", the prompt will be your username @ your hostname 
