@@ -274,7 +274,7 @@ public class tshell {
            } catch (IOException e) {
             IO.println("Could not write to history. Hit E for error code");
 
-                // ignore warning, it does its job and @
+                // ignore warning, it does its job and @Override does not work
              new errorTimerThread(); 
             if (scanner.nextLine().toLowerCase().equals("e")){
                 IO.println(e);
@@ -373,17 +373,6 @@ prompt = shortPrompt.get(0);
                             pb.inheritIO();
                             Process process = pb.start();
 
-
-/*
-                            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                            StringBuilder builder = new StringBuilder();
-                            String line = "";
-                            while ( (line = reader.readLine()) != null) {
-                                builder.append(line);
-                                builder.append(System.getProperty("line.separator"));
-                            }
-                            cmdOutput = builder.toString();
-*/
                             
                             @SuppressWarnings("unused")
                             int exitCode = process.waitFor(); // so it waits for finish + if i delete it a random error appears. Idk why
@@ -803,7 +792,6 @@ static void runPipeline(String prompt) {
 static List<String> parseCommand(String input) { // tokanizer so " and ' work inside commands
     List<String> tokens = new ArrayList<>();
     StringBuilder current = new StringBuilder();
-
     boolean inDoubleQuotes = false;
     boolean inSingleQuotes = false;
 
