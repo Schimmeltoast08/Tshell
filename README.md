@@ -66,6 +66,8 @@ command=command2
 ```
 each new statement must be on a new line. In this example, if you type command it will execute command2. 
 
+Alternatively, you can use the alias command with the same syntax
+
 ### Secret functions
 1. if you set the second line to "user@host", the prompt will be your username @ your hostname 
 2. if you set the second line to "showCWD" (show current working directory) and the first line to anything other then user@host, the prompt will be your working directory
